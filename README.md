@@ -1,5 +1,8 @@
 # similar-adoc-modules
 
+[![Rust tests](https://github.com/msuchane/similar-adoc-modules/actions/workflows/rust-tests.yml/badge.svg)](https://github.com/msuchane/similar-adoc-modules/actions/workflows/rust-tests.yml)
+[![dependency status](https://deps.rs/repo/github/msuchane/similar-adoc-modules/status.svg)](https://deps.rs/repo/github/msuchane/similar-adoc-modules)
+
 Identify modules in Red Hat documentation that are too similar, or identical. Compares text files using the Levenshtein distance metric.
 
 ## Usage
