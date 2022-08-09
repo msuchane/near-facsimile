@@ -107,13 +107,13 @@ fn compare_modules<'a>(
                 let message = format!("These two files are identical ({:.1}%):", percent);
                 println!(
                     "{}",
-                    message.if_supports_color(Stream::Stdout, |text| text.red())
+                    message.if_supports_color(Stream::Stdout, OwoColorize::red)
                 );
             } else {
                 let message = format!("These two files are similar ({:.1}%):", percent);
                 println!(
                     "{}",
-                    message.if_supports_color(Stream::Stdout, |text| text.yellow())
+                    message.if_supports_color(Stream::Stdout, OwoColorize::yellow)
                 );
             };
             println!(
