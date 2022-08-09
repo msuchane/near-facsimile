@@ -21,3 +21,12 @@ log = "0.4"
 simplelog = "0.12"
 owo-colors = "3.4"
 csv = "1.1"
+
+[package.metadata.rpm]
+package = "similar-adoc-modules"
+
+[package.metadata.rpm.cargo]
+buildflags = ["--release"]
+
+[package.metadata.rpm.targets]
+similar-adoc-modules = { path = "/usr/bin/similar-adoc-modules" }
