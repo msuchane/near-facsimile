@@ -113,7 +113,7 @@ fn compare_modules<'a>(
                     message.if_supports_color(Stream::Stdout, |text| text.red())
                 );
             } else {
-                let message = format!("These two files are very similar ({:.1}%):", percent);
+                let message = format!("These two files are similar ({:.1}%):", percent);
                 println!(
                     "{}",
                     message.if_supports_color(Stream::Stdout, |text| text.yellow())
