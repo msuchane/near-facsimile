@@ -6,6 +6,8 @@ use color_eyre::Result;
 use owo_colors::OwoColorize;
 use rayon::prelude::*;
 
+mod cli;
+
 const IGNORED_FILE_NAMES: [&str; 5] = [
     "master.adoc",
     "_local-attributes.adoc",
@@ -30,12 +32,18 @@ struct Comparison<'a> {
 }
 
 fn main() -> Result<()> {
-    init_log_and_errors()?;
+    let options = cli::options();
 
-    let base_path = Path::new(".");
+    init_log_and_errors(options.verbose)?;
+
+    let base_path = if let Some(path) = options.path {
+        path
+    } else {
+        PathBuf::from(".")
+    };
 
     log::info!("Loading files…");
-    let files = visit_dirs(base_path)?;
+    let files = visit_dirs(&base_path)?;
 
     log::info!("Comparing files…");
 
@@ -63,11 +71,17 @@ fn main() -> Result<()> {
 }
 
 /// Initialize the handlers for logging and error reporting.
-fn init_log_and_errors() -> Result<()> {
+fn init_log_and_errors(verbose: u8) -> Result<()> {
     color_eyre::install()?;
 
+    let log_level = match verbose {
+        0 => simplelog::LevelFilter::Info,
+        1 => simplelog::LevelFilter::Debug,
+        _ => simplelog::LevelFilter::Trace,
+    };
+
     simplelog::TermLogger::init(
-        simplelog::LevelFilter::Info,
+        log_level,
         simplelog::Config::default(),
         // Mixed mode prints errors to stderr and info to stdout. Not sure about the other levels.
         simplelog::TerminalMode::default(),

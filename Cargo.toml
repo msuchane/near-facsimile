@@ -21,6 +21,7 @@ log = "0.4"
 simplelog = "0.12"
 owo-colors = "3.4"
 csv = "1.1"
+clap = { version = "3.2", features = ["derive", "cargo"] }
 
 [package.metadata.rpm]
 package = "similar-adoc-modules"
