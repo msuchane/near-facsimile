@@ -15,7 +15,6 @@ const IGNORED_FILE_NAMES: [&str; 5] = [
     "README.adoc",
     "_attributes.adoc",
 ];
-const SIMILARITY_THRESHOLD: f64 = 0.8;
 const OUT_FILE_NAME: &str = "comparisons.csv";
 
 /// Represents a loaded AsciiDoc file, with its path and content.
@@ -36,11 +35,8 @@ fn main() -> Result<()> {
 
     init_log_and_errors(options.verbose)?;
 
-    let base_path = if let Some(path) = options.path {
-        path
-    } else {
-        PathBuf::from(".")
-    };
+    let base_path = options.path;
+    let threshold = options.threshold;
 
     log::info!("Loading files…");
     let files = visit_dirs(&base_path)?;
@@ -56,7 +52,7 @@ fn main() -> Result<()> {
 
                 let mut comparisons: Vec<Comparison> = files[starting_index..]
                     .par_iter()
-                    .filter_map(|module2| compare_modules(module1, module2))
+                    .filter_map(|module2| compare_modules(module1, module2, threshold))
                     .collect();
 
                 acc.append(&mut comparisons);
@@ -94,7 +90,11 @@ fn init_log_and_errors(verbose: u8) -> Result<()> {
 
 /// Compare the two modules. Print out the report and return a struct with the information.
 /// Returns None if the files were skipped or if they are more different than the threshold.
-fn compare_modules<'a>(module1: &'a Module, module2: &'a Module) -> Option<Comparison<'a>> {
+fn compare_modules<'a>(
+    module1: &'a Module,
+    module2: &'a Module,
+    threshold: f64,
+) -> Option<Comparison<'a>> {
     if module1.path == module2.path {
         log::warn!("Comparing the same files.");
         None
@@ -103,7 +103,7 @@ fn compare_modules<'a>(module1: &'a Module, module2: &'a Module) -> Option<Compa
         None
     } else {
         let similarity = strsim::normalized_levenshtein(&module1.content, &module2.content);
-        if similarity > SIMILARITY_THRESHOLD {
+        if similarity > threshold {
             let percent = similarity * 100.0;
 
             if similarity >= 1.0 {
