@@ -9,17 +9,19 @@ pub struct Cli {
     #[clap(value_parser, value_name = "DIR", default_value = ".")]
     pub path: PathBuf,
 
-    // Sets a custom config file
-    //#[clap(short, long, value_parser, value_name = "FILE")]
-    //config: Option<PathBuf>,
+    /// The similarity fraction above which to report files
+    #[clap(short, long, value_name = "DECIMAL", default_value = "0.8")]
+    pub threshold: f64,
+
+    /// Use a faster but less precise comparison method
+    #[clap(short, long, action)]
+    pub fast: bool,
+
     /// Display progress and debugging information
     #[clap(short, long, action = clap::ArgAction::Count)]
     pub verbose: u8,
     //#[clap(subcommand)]
     //command: Option<Commands>,
-    /// The similarity fraction above which to report files
-    #[clap(short, long, value_name = "DECIMAL", default_value = "0.8")]
-    pub threshold: f64,
 }
 
 /*

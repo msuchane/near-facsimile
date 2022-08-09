@@ -8,6 +8,8 @@ use rayon::prelude::*;
 
 pub mod cli;
 
+use cli::Cli;
+
 const IGNORED_FILE_NAMES: [&str; 6] = [
     "master.adoc",
     "main.adoc",
@@ -31,9 +33,8 @@ struct Comparison<'a> {
     similarity_pct: f64,
 }
 
-pub fn run(options: &cli::Cli) -> Result<()> {
+pub fn run(options: &Cli) -> Result<()> {
     let base_path = &options.path;
-    let threshold = options.threshold;
 
     log::info!("Loading files…");
     let files = visit_dirs(base_path)?;
@@ -49,7 +50,7 @@ pub fn run(options: &cli::Cli) -> Result<()> {
 
                 let mut comparisons: Vec<Comparison> = files[starting_index..]
                     .par_iter()
-                    .filter_map(|module2| compare_modules(module1, module2, threshold))
+                    .filter_map(|module2| compare_modules(module1, module2, options))
                     .collect();
 
                 acc.append(&mut comparisons);
@@ -90,7 +91,7 @@ pub fn init_log_and_errors(verbose: u8) -> Result<()> {
 fn compare_modules<'a>(
     module1: &'a Module,
     module2: &'a Module,
-    threshold: f64,
+    options: &Cli,
 ) -> Option<Comparison<'a>> {
     if module1.path == module2.path {
         log::warn!("Comparing the same files.");
@@ -99,8 +100,12 @@ fn compare_modules<'a>(
         log::debug!("Skipping files {:?} and {:?}", &module1.path, &module2.path);
         None
     } else {
-        let similarity = strsim::normalized_levenshtein(&module1.content, &module2.content);
-        if similarity > threshold {
+        let similarity = if options.fast {
+            strsim::jaro(&module1.content, &module2.content)
+        } else {
+            strsim::normalized_levenshtein(&module1.content, &module2.content)
+        };
+        if similarity > options.threshold {
             let percent = similarity * 100.0;
 
             if similarity >= 1.0 {
