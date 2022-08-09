@@ -111,6 +111,7 @@ fn compare_modules<'a>(module1: &'a Module, module2: &'a Module) -> Option<Compa
                 similarity_pct: percent,
             })
         } else {
+            // The files are too different.
             None
         }
     }
@@ -137,13 +138,12 @@ fn visit_dirs(dir: &Path) -> Result<Vec<Module>> {
         let path = entry?.path();
         // println!("Entry: {:?}", &path);
         if path.is_symlink() {
-            // println!("Symlink: {:?}", &path);
-            continue;
+            log::debug!("Skipping the symbolic link: {:?}", &path);
         } else if path.is_dir() {
-            // println!("Directory: {:?}", &path);
+            log::debug!("Descending into directory: {:?}", &path);
             files.append(&mut visit_dirs(&path)?);
         } else if path.is_file() && path.extension() == Some(extension) {
-            // println!("Inserting file: {:?}", &path);
+            log::debug!("Loading file: {:?}", &path);
             let content = fs::read_to_string(&path)?;
             let module = Module { path, content };
             files.push(module);
@@ -154,15 +154,18 @@ fn visit_dirs(dir: &Path) -> Result<Vec<Module>> {
 
 /// Serialize the resulting comparisons as a CSV table.
 fn serialize(comparisons: &mut [Comparison]) -> Result<()> {
+    // Prepare to write to the CSV file.
     let mut wtr = csv::Writer::from_path(OUT_FILE_NAME)?;
 
+    // The CSV header:
     wtr.write_record(&["% similar", "File 1", "File 2"])?;
 
     // Sort from highest to lowest. You can't sort f64 values, so convert them to u32
     // with a precision of percentage with a single decimal place, then subtract from 1000.
     comparisons
-        .par_sort_by_key(|comparison| 1000 - (comparison.similarity_pct * 10.0).round() as u32);
+        .par_sort_by_key(|comparison| 1000 - (comparison.similarity_pct * 10.0).round() as i32);
 
+    // Each comparison entry writes a row in the CSV table.
     for comparison in comparisons {
         wtr.write_record(&[
             format!("{:.1}", comparison.similarity_pct),
@@ -171,6 +174,7 @@ fn serialize(comparisons: &mut [Comparison]) -> Result<()> {
         ])?;
     }
 
+    // Flush the CSV writer buffer.
     wtr.flush()?;
 
     Ok(())
