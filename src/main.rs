@@ -15,6 +15,19 @@ const IGNORED_FILE_NAMES: [&str; 5] = [
 ];
 const SIMILARITY_THRESHOLD: f64 = 0.8;
 
+/// Represents a loaded AsciiDoc file, with its path and content.
+struct Module {
+    path: PathBuf,
+    content: String,
+}
+
+#[derive(Debug)]
+struct Comparison<'a> {
+    path1: &'a Path,
+    path2: &'a PathBuf,
+    similarity_pct: u8,
+}
+
 fn main() -> Result<()> {
     init_log_and_errors()?;
 
@@ -27,35 +40,24 @@ fn main() -> Result<()> {
 
     log::info!("Comparing files…");
 
-    for (index1, module1) in files.iter().enumerate() {
-        let starting_index = index1 + 1;
+    let comparisons: Vec<Comparison> =
+        files
+            .iter()
+            .enumerate()
+            .fold(Vec::new(), |mut acc, (index1, module1)| {
+                let starting_index = index1 + 1;
 
-        files[starting_index..].par_iter().for_each(|module2| {
-            if module1.path == module2.path {
-                log::warn!("Comparing the same files.");
-            } else if can_skip(module1) || can_skip(module2) {
-                log::debug!("Skipping files {:?} and {:?}", &module1.path, &module2.path);
-            } else {
-                let similarity = strsim::normalized_levenshtein(&module1.content, &module2.content);
-                if similarity > SIMILARITY_THRESHOLD {
-                    let percent = (similarity * 100.0).round();
+                let mut comparisons: Vec<Comparison> = files[starting_index..]
+                    .par_iter()
+                    .filter_map(|module2| compare_modules(module1, module2))
+                    .collect();
 
-                    if similarity >= 1.0 {
-                        let message = format!("These two files are identical ({}%):", percent);
-                        println!("{}", message.red());
-                    } else {
-                        let message = format!("These two files are very similar ({}%):", percent);
-                        println!("{}", message.yellow());
-                    };
-                    println!(
-                        "\t→ {}\n\t→ {}",
-                        module1.path.display(),
-                        module2.path.display()
-                    );
-                }
-            }
-        });
-    }
+                acc.append(&mut comparisons);
+
+                acc
+            });
+
+    println!("{:#?}", comparisons);
 
     Ok(())
 }
@@ -76,6 +78,42 @@ fn init_log_and_errors() -> Result<()> {
     Ok(())
 }
 
+fn compare_modules<'a>(module1: &'a Module, module2: &'a Module) -> Option<Comparison<'a>> {
+    if module1.path == module2.path {
+        log::warn!("Comparing the same files.");
+        None
+    } else if can_skip(module1) || can_skip(module2) {
+        log::debug!("Skipping files {:?} and {:?}", &module1.path, &module2.path);
+        None
+    } else {
+        let similarity = strsim::normalized_levenshtein(&module1.content, &module2.content);
+        if similarity > SIMILARITY_THRESHOLD {
+            let percent = (similarity * 100.0).round();
+
+            if similarity >= 1.0 {
+                let message = format!("These two files are identical ({}%):", percent);
+                println!("{}", message.red());
+            } else {
+                let message = format!("These two files are very similar ({}%):", percent);
+                println!("{}", message.yellow());
+            };
+            println!(
+                "\t→ {}\n\t→ {}",
+                module1.path.display(),
+                module2.path.display()
+            );
+
+            Some(Comparison {
+                path1: &module1.path,
+                path2: &module2.path,
+                similarity_pct: percent as u8,
+            })
+        } else {
+            None
+        }
+    }
+}
+
 fn can_skip(module: &Module) -> bool {
     let string = module.path.file_name().and_then(OsStr::to_str);
 
@@ -83,12 +121,6 @@ fn can_skip(module: &Module) -> bool {
         Some(s) => IGNORED_FILE_NAMES.contains(&s),
         None => false,
     }
-}
-
-/// Represents a loaded AsciiDoc file, with its path and content.
-struct Module {
-    path: PathBuf,
-    content: String,
 }
 
 /// Recursively load all files in this directory as a Vec.
