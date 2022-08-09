@@ -34,6 +34,8 @@ enum Commands {
 }
 */
 
+/// Parse the current command-line options.
+#[must_use]
 pub fn options() -> Cli {
     Cli::parse()
 }
