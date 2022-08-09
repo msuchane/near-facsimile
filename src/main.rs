@@ -3,7 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use color_eyre::Result;
-use owo_colors::OwoColorize;
+use owo_colors::{OwoColorize, Stream};
 use rayon::prelude::*;
 
 mod cli;
@@ -108,10 +108,16 @@ fn compare_modules<'a>(module1: &'a Module, module2: &'a Module) -> Option<Compa
 
             if similarity >= 1.0 {
                 let message = format!("These two files are identical ({:.1}%):", percent);
-                println!("{}", message.red());
+                println!(
+                    "{}",
+                    message.if_supports_color(Stream::Stdout, |text| text.red())
+                );
             } else {
                 let message = format!("These two files are very similar ({:.1}%):", percent);
-                println!("{}", message.yellow());
+                println!(
+                    "{}",
+                    message.if_supports_color(Stream::Stdout, |text| text.yellow())
+                );
             };
             println!(
                 "\t→ {}\n\t→ {}",
