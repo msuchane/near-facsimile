@@ -2,6 +2,14 @@
 name = "similar-adoc-modules"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.58"
+authors = ["Marek Suchánek <msuchane@redhat.com>"]
+license = "Apache-2.0"
+description = "Find similar or identical files in Red Hat documentation"
+repository = "https://github.com/msuchane/similar-adoc-modules/"
+readme = "README.md"
+keywords = ["Red Hat", "documentation"]
+categories = ["command-line-utilities", "text-processing"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
