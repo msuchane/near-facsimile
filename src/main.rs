@@ -3,6 +3,7 @@ use std::fs::{self, DirEntry};
 use std::path::{Path, PathBuf};
 
 use color_eyre::{eyre::eyre, Result};
+use owo_colors::OwoColorize;
 use rayon::prelude::*;
 
 const IGNORED_FILE_NAMES: [&str; 5] = [
@@ -47,8 +48,19 @@ fn main() -> Result<()> {
                 let similarity = strsim::normalized_levenshtein(&module1.content, &module2.content);
                 if similarity > 0.8 {
                     let percent = (similarity * 100.0).round();
-                    println!("These two files are very similar ({}%):", percent);
-                    println!("* {}\n* {}", module1.path.display(), module2.path.display());
+
+                    if similarity >= 1.0 {
+                        let message = format!("These two files are identical ({}%):", percent);
+                        println!("{}", message.red());
+                    } else {
+                        let message = format!("These two files are very similar ({}%):", percent);
+                        println!("{}", message.yellow());
+                    };
+                    println!(
+                        "\t→ {}\n\t→ {}",
+                        module1.path.display(),
+                        module2.path.display()
+                    );
                 }
             }
         });

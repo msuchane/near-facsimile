@@ -144,6 +144,7 @@ version = "0.1.0"
 dependencies = [
  "color-eyre",
  "log",
+ "owo-colors",
  "rayon",
  "simplelog",
  "strsim",
