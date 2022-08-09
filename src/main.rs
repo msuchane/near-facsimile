@@ -1,6 +1,5 @@
 use std::ffi::OsStr;
 use std::fs;
-use std::io;
 use std::path::{Path, PathBuf};
 
 use color_eyre::Result;
@@ -15,6 +14,7 @@ const IGNORED_FILE_NAMES: [&str; 5] = [
     "_attributes.adoc",
 ];
 const SIMILARITY_THRESHOLD: f64 = 0.8;
+const OUT_FILE_NAME: &str = "comparisons.csv";
 
 /// Represents a loaded AsciiDoc file, with its path and content.
 struct Module {
@@ -153,7 +153,8 @@ fn visit_dirs(dir: &Path) -> Result<Vec<Module>> {
 
 /// Serialize the resulting comparisons as a CSV table.
 fn serialize(comparisons: &mut [Comparison]) -> Result<()> {
-    let mut wtr = csv::Writer::from_writer(io::stdout());
+    let mut wtr = csv::Writer::from_path(OUT_FILE_NAME)?;
+
     wtr.write_record(&["% similar", "File 1", "File 2"])?;
 
     // Sort from highest to lowest, therefore substract the similarity from 100.
