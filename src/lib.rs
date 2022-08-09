@@ -7,8 +7,10 @@ use owo_colors::{OwoColorize, Stream};
 use rayon::prelude::*;
 
 pub mod cli;
+mod serialize;
 
 use cli::Cli;
+use serialize::serialize;
 
 const IGNORED_FILE_NAMES: [&str; 6] = [
     "master.adoc",
@@ -18,7 +20,6 @@ const IGNORED_FILE_NAMES: [&str; 6] = [
     "_title-attributes.adoc",
     "README.adoc",
 ];
-const OUT_FILE_NAME: &str = "comparisons.csv";
 
 /// Represents a loaded AsciiDoc file, with its path and content.
 struct Module {
@@ -27,7 +28,7 @@ struct Module {
 }
 
 #[derive(Debug)]
-struct Comparison<'a> {
+pub struct Comparison<'a> {
     path1: &'a Path,
     path2: &'a PathBuf,
     similarity_pct: f64,
@@ -41,7 +42,7 @@ pub fn run(options: &Cli) -> Result<()> {
 
     log::info!("Comparing files…");
 
-    let mut comparisons: Vec<Comparison> =
+    let comparisons: Vec<Comparison> =
         files
             .iter()
             .enumerate()
@@ -59,7 +60,7 @@ pub fn run(options: &Cli) -> Result<()> {
             });
 
     log::info!("Producing a CSV table…");
-    serialize(&mut comparisons)?;
+    serialize(comparisons)?;
 
     Ok(())
 }
@@ -172,32 +173,4 @@ fn visit_dirs(dir: &Path) -> Result<Vec<Module>> {
         }
     }
     Ok(files)
-}
-
-/// Serialize the resulting comparisons as a CSV table.
-fn serialize(comparisons: &mut [Comparison]) -> Result<()> {
-    // Prepare to write to the CSV file.
-    let mut wtr = csv::Writer::from_path(OUT_FILE_NAME)?;
-
-    // The CSV header:
-    wtr.write_record(&["% similar", "File 1", "File 2"])?;
-
-    // Sort from highest to lowest. You can't sort f64 values, so convert them to u32
-    // with a precision of percentage with a single decimal place, then subtract from 1000.
-    comparisons
-        .par_sort_by_key(|comparison| 1000 - (comparison.similarity_pct * 10.0).round() as i32);
-
-    // Each comparison entry writes a row in the CSV table.
-    for comparison in comparisons {
-        wtr.write_record(&[
-            format!("{:.1}", comparison.similarity_pct),
-            comparison.path1.display().to_string(),
-            comparison.path2.display().to_string(),
-        ])?;
-    }
-
-    // Flush the CSV writer buffer.
-    wtr.flush()?;
-
-    Ok(())
 }
