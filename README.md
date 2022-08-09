@@ -4,7 +4,7 @@ Identify modules in Red Hat documentation that are too similar, or identical. Co
 
 ## Usage
 
-1. Compile this program. See the Rust documentation: <https://doc.rust-lang.org/stable/book/ch01-00-getting-started.html>.
+1. On Fedora, RHEL, or CentOS, install this program from the following repository: <https://copr.fedorainfracloud.org/coprs/mareksu/similar-adoc-modules/>.
 
 2. Run this program at the root of the documentation repository.
 
