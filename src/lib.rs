@@ -60,7 +60,7 @@ pub fn run(options: &Cli) -> Result<()> {
             });
 
     log::info!("Producing a CSV table…");
-    serialize(comparisons)?;
+    serialize(comparisons, options)?;
 
     Ok(())
 }

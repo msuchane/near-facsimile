@@ -1,13 +1,12 @@
 use color_eyre::Result;
 
+use crate::Cli;
 use crate::Comparison;
 
-const OUT_FILE_NAME: &str = "comparisons.csv";
-
 /// Serialize the resulting comparisons as a CSV table.
-pub fn serialize(mut comparisons: Vec<Comparison>) -> Result<()> {
+pub fn serialize(mut comparisons: Vec<Comparison>, options: &Cli) -> Result<()> {
     // Prepare to write to the CSV file.
-    let mut wtr = csv::Writer::from_path(OUT_FILE_NAME)?;
+    let mut wtr = csv::Writer::from_path(&options.csv_path)?;
 
     // The CSV header:
     wtr.write_record(&["% similar", "File 1", "File 2"])?;

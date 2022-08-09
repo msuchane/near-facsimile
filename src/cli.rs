@@ -5,7 +5,7 @@ use clap::Parser;
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 pub struct Cli {
-    /// Optional: Path to the root documentation directory
+    /// Path to the root documentation directory
     #[clap(value_parser, value_name = "DIR", default_value = ".")]
     pub path: PathBuf,
 
@@ -20,6 +20,10 @@ pub struct Cli {
     /// Display progress and debugging information
     #[clap(short, long, action = clap::ArgAction::Count)]
     pub verbose: u8,
+
+    /// Path to the output CSV file
+    #[clap(short, long, value_name = "FILE", default_value = "comparisons.csv")]
+    pub csv_path: PathBuf,
     //#[clap(subcommand)]
     //command: Option<Commands>,
 }
