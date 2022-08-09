@@ -1,5 +1,6 @@
 use std::ffi::OsStr;
 use std::fs;
+use std::io;
 use std::path::{Path, PathBuf};
 
 use color_eyre::Result;
@@ -36,11 +37,9 @@ fn main() -> Result<()> {
     log::info!("Loading files…");
     let files = visit_dirs(base_path)?;
 
-    // println!("Files:\n{:#?}", files);
-
     log::info!("Comparing files…");
 
-    let comparisons: Vec<Comparison> =
+    let mut comparisons: Vec<Comparison> =
         files
             .iter()
             .enumerate()
@@ -57,7 +56,7 @@ fn main() -> Result<()> {
                 acc
             });
 
-    println!("{:#?}", comparisons);
+    serialize(&mut comparisons)?;
 
     Ok(())
 }
@@ -78,6 +77,8 @@ fn init_log_and_errors() -> Result<()> {
     Ok(())
 }
 
+/// Compare the two modules. Print out the report and return a struct with the information.
+/// Returns None if the files were skipped or if they are more different than the threshold.
 fn compare_modules<'a>(module1: &'a Module, module2: &'a Module) -> Option<Comparison<'a>> {
     if module1.path == module2.path {
         log::warn!("Comparing the same files.");
@@ -114,6 +115,7 @@ fn compare_modules<'a>(module1: &'a Module, module2: &'a Module) -> Option<Compa
     }
 }
 
+/// Determine if we can skip comparing this module, because it's common content.
 fn can_skip(module: &Module) -> bool {
     let string = module.path.file_name().and_then(OsStr::to_str);
 
@@ -147,4 +149,25 @@ fn visit_dirs(dir: &Path) -> Result<Vec<Module>> {
         }
     }
     Ok(files)
+}
+
+/// Serialize the resulting comparisons as a CSV table.
+fn serialize(comparisons: &mut [Comparison]) -> Result<()> {
+    let mut wtr = csv::Writer::from_writer(io::stdout());
+    wtr.write_record(&["% similar", "File 1", "File 2"])?;
+
+    // Sort from highest to lowest, therefore substract the similarity from 100.
+    comparisons.par_sort_by_key(|comparison| 100 - comparison.similarity_pct);
+
+    for comparison in comparisons {
+        wtr.write_record(&[
+            comparison.similarity_pct.to_string(),
+            comparison.path1.display().to_string(),
+            comparison.path2.display().to_string(),
+        ])?;
+    }
+
+    wtr.flush()?;
+
+    Ok(())
 }
