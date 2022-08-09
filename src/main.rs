@@ -5,17 +5,31 @@ use std::ffi::OsStr;
 use color_eyre::{eyre::eyre, Result};
 use rayon::prelude::*;
 
+const IGNORED_FILE_NAMES: [&str; 5] = ["master.adoc", "_local-attributes.adoc", "_title-attributes.adoc", "README.adoc", "_attributes.adoc"];
+
 fn main() -> Result<()> {
     color_eyre::install()?;
 
     println!("Hello, world!");
 
+    simplelog::TermLogger::init(
+        simplelog::LevelFilter::Info,
+        simplelog::Config::default(),
+        // Mixed mode prints errors to stderr and info to stdout. Not sure about the other levels.
+        simplelog::TerminalMode::default(),
+        // Try to use color if possible.
+        simplelog::ColorChoice::Auto,
+    )?;
+
     let base_path = Path::new(".");
     let mut files = Vec::new();
 
+    log::info!("Loading files…");
     visit_dirs(base_path, &mut files)?;
 
     // println!("Files:\n{:#?}", files);
+
+    log::info!("Comparing files…");
 
     for (index1, module1) in files.iter().enumerate() {
         let starting_index = index1 + 1;
@@ -23,6 +37,7 @@ fn main() -> Result<()> {
         files[starting_index..].par_iter().for_each(|module2| {
             if module1.path == module2.path {
                 println!("Same files actually.");
+            } else if can_skip(module1) || can_skip(module2) {
             } else {
                 let similarity = strsim::normalized_levenshtein(&module1.content, &module2.content);
                 if similarity > 0.8 {
@@ -35,6 +50,15 @@ fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn can_skip(module: &Module) -> bool {
+    let string = module.path.file_name().and_then(OsStr::to_str);
+
+    match string {
+        Some(s) => IGNORED_FILE_NAMES.contains(&s),
+        None => false
+    }
 }
 
 struct Module {
