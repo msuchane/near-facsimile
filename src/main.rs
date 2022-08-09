@@ -1,11 +1,17 @@
+use std::ffi::OsStr;
 use std::fs::{self, DirEntry};
 use std::path::{Path, PathBuf};
-use std::ffi::OsStr;
 
 use color_eyre::{eyre::eyre, Result};
 use rayon::prelude::*;
 
-const IGNORED_FILE_NAMES: [&str; 5] = ["master.adoc", "_local-attributes.adoc", "_title-attributes.adoc", "README.adoc", "_attributes.adoc"];
+const IGNORED_FILE_NAMES: [&str; 5] = [
+    "master.adoc",
+    "_local-attributes.adoc",
+    "_title-attributes.adoc",
+    "README.adoc",
+    "_attributes.adoc",
+];
 
 fn main() -> Result<()> {
     color_eyre::install()?;
@@ -22,10 +28,9 @@ fn main() -> Result<()> {
     )?;
 
     let base_path = Path::new(".");
-    let mut files = Vec::new();
 
     log::info!("Loading files…");
-    visit_dirs(base_path, &mut files)?;
+    let files = visit_dirs(base_path)?;
 
     // println!("Files:\n{:#?}", files);
 
@@ -57,39 +62,38 @@ fn can_skip(module: &Module) -> bool {
 
     match string {
         Some(s) => IGNORED_FILE_NAMES.contains(&s),
-        None => false
+        None => false,
     }
 }
 
+/// Represents a loaded AsciiDoc file, with its path and content.
 struct Module {
     path: PathBuf,
     content: String,
 }
 
-// one possible implementation of walking a directory only visiting files
-fn visit_dirs(dir: &Path, files: &mut Vec<Module>) -> Result<()> {
+/// Recursively load all files in this directory as a Vec.
+fn visit_dirs(dir: &Path) -> Result<Vec<Module>> {
+    let mut files = Vec::new();
+
+    // Look for files with this extension. Ignore the rest.
     let extension: &OsStr = OsStr::new("adoc");
 
-    if dir.is_dir() {
-        for entry in fs::read_dir(dir)? {
-            let path = entry?.path();
-            // println!("Entry: {:?}", &path);
-            if path.is_symlink() {
-                // println!("Symlink: {:?}", &path);
-                continue;
-            } else if path.is_dir() {
-                // println!("Directory: {:?}", &path);
-                visit_dirs(&path, files)?;
-            } else if path.is_file() && path.extension() == Some(extension) {
-                // println!("Inserting file: {:?}", &path);
-                let content = fs::read_to_string(&path)?;
-                let module = Module {
-                    path,
-                    content
-                };
-                files.push(module);
-            }
+    for entry in fs::read_dir(dir)? {
+        let path = entry?.path();
+        // println!("Entry: {:?}", &path);
+        if path.is_symlink() {
+            // println!("Symlink: {:?}", &path);
+            continue;
+        } else if path.is_dir() {
+            // println!("Directory: {:?}", &path);
+            files.append(&mut visit_dirs(&path)?);
+        } else if path.is_file() && path.extension() == Some(extension) {
+            // println!("Inserting file: {:?}", &path);
+            let content = fs::read_to_string(&path)?;
+            let module = Module { path, content };
+            files.push(module);
         }
     }
-    Ok(())
+    Ok(files)
 }
