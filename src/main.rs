@@ -26,7 +26,7 @@ struct Module {
 struct Comparison<'a> {
     path1: &'a Path,
     path2: &'a PathBuf,
-    similarity_pct: u8,
+    similarity_pct: f64,
 }
 
 fn main() -> Result<()> {
@@ -56,6 +56,7 @@ fn main() -> Result<()> {
                 acc
             });
 
+    log::info!("Producing a CSV table…");
     serialize(&mut comparisons)?;
 
     Ok(())
@@ -89,13 +90,13 @@ fn compare_modules<'a>(module1: &'a Module, module2: &'a Module) -> Option<Compa
     } else {
         let similarity = strsim::normalized_levenshtein(&module1.content, &module2.content);
         if similarity > SIMILARITY_THRESHOLD {
-            let percent = (similarity * 100.0).round();
+            let percent = similarity * 100.0;
 
             if similarity >= 1.0 {
-                let message = format!("These two files are identical ({}%):", percent);
+                let message = format!("These two files are identical ({:.1}%):", percent);
                 println!("{}", message.red());
             } else {
-                let message = format!("These two files are very similar ({}%):", percent);
+                let message = format!("These two files are very similar ({:.1}%):", percent);
                 println!("{}", message.yellow());
             };
             println!(
@@ -107,7 +108,7 @@ fn compare_modules<'a>(module1: &'a Module, module2: &'a Module) -> Option<Compa
             Some(Comparison {
                 path1: &module1.path,
                 path2: &module2.path,
-                similarity_pct: percent as u8,
+                similarity_pct: percent,
             })
         } else {
             None
@@ -158,11 +159,11 @@ fn serialize(comparisons: &mut [Comparison]) -> Result<()> {
     wtr.write_record(&["% similar", "File 1", "File 2"])?;
 
     // Sort from highest to lowest, therefore substract the similarity from 100.
-    comparisons.par_sort_by_key(|comparison| 100 - comparison.similarity_pct);
+    comparisons.par_sort_by_key(|comparison| 100 - comparison.similarity_pct as u8);
 
     for comparison in comparisons {
         wtr.write_record(&[
-            comparison.similarity_pct.to_string(),
+            format!("{:.1}", comparison.similarity_pct),
             comparison.path1.display().to_string(),
             comparison.path2.display().to_string(),
         ])?;
