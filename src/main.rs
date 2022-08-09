@@ -75,9 +75,9 @@ fn init_log_and_errors(verbose: u8) -> Result<()> {
     color_eyre::install()?;
 
     let log_level = match verbose {
-        0 => simplelog::LevelFilter::Info,
-        1 => simplelog::LevelFilter::Debug,
-        _ => simplelog::LevelFilter::Trace,
+        0 => simplelog::LevelFilter::Warn,
+        1 => simplelog::LevelFilter::Info,
+        _ => simplelog::LevelFilter::Debug,
     };
 
     simplelog::TermLogger::init(
