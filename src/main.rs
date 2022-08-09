@@ -158,8 +158,10 @@ fn serialize(comparisons: &mut [Comparison]) -> Result<()> {
 
     wtr.write_record(&["% similar", "File 1", "File 2"])?;
 
-    // Sort from highest to lowest, therefore substract the similarity from 100.
-    comparisons.par_sort_by_key(|comparison| 100 - comparison.similarity_pct as u8);
+    // Sort from highest to lowest. You can't sort f64 values, so convert them to u32
+    // with a precision of percentage with a single decimal place, then subtract from 1000.
+    comparisons
+        .par_sort_by_key(|comparison| 1000 - (comparison.similarity_pct * 10.0).round() as u32);
 
     for comparison in comparisons {
         wtr.write_record(&[
