@@ -41,6 +41,10 @@ pub fn run(options: &Cli) -> Result<()> {
 
     log::info!("Loading files…");
     let files = visit_dirs(base_path)?;
+    let files: Vec<Module> = files
+        .into_par_iter()
+        .filter(|file| !file.can_skip())
+        .collect();
 
     // Combinations by 2 pair each file with each file, so that no comparison
     // occurs more than once.
@@ -97,66 +101,67 @@ fn compare_modules<'a>(
     total: usize,
     options: &Cli,
 ) -> Option<Comparison<'a>> {
-    log::debug!("File #{}/{}", index, total);
-    if module1.path == module2.path {
-        log::warn!("Comparing the same files.");
-        None
-    } else if can_skip(module1) || can_skip(module2) {
-        log::debug!("Skipping files {:?} and {:?}", &module1.path, &module2.path);
-        None
+    log::debug!("Comparison #{}/{}", index, total);
+
+    let similarity = if options.fast {
+        strsim::jaro(&module1.content, &module2.content)
     } else {
-        let similarity = if options.fast {
-            strsim::jaro(&module1.content, &module2.content)
-        } else {
-            strsim::normalized_levenshtein(&module1.content, &module2.content)
-        };
-        if similarity > options.threshold {
-            let percent = similarity * 100.0;
+        strsim::normalized_levenshtein(&module1.content, &module2.content)
+    };
+    if similarity > options.threshold {
+        let percent = similarity * 100.0;
 
-            if similarity >= 1.0 {
-                let message = format!(
-                    "[{}/{}] These two files are identical ({:.1}%):",
-                    index, total, percent
-                );
-                println!(
-                    "{}",
-                    message.if_supports_color(Stream::Stdout, OwoColorize::red)
-                );
-            } else {
-                let message = format!(
-                    "[{}/{}] These two files are similar ({:.1}%):",
-                    index, total, percent
-                );
-                println!(
-                    "{}",
-                    message.if_supports_color(Stream::Stdout, OwoColorize::yellow)
-                );
-            };
-            println!(
-                "\t→ {}\n\t→ {}",
-                module1.path.display(),
-                module2.path.display()
+        if similarity >= 1.0 {
+            let message = format!(
+                "[{}/{}] These two files are identical ({:.1}%):",
+                index, total, percent
             );
-
-            Some(Comparison {
-                path1: &module1.path,
-                path2: &module2.path,
-                similarity_pct: percent,
-            })
+            println!(
+                "{}",
+                message.if_supports_color(Stream::Stdout, OwoColorize::red)
+            );
         } else {
-            // The files are too different.
-            None
-        }
+            let message = format!(
+                "[{}/{}] These two files are similar ({:.1}%):",
+                index, total, percent
+            );
+            println!(
+                "{}",
+                message.if_supports_color(Stream::Stdout, OwoColorize::yellow)
+            );
+        };
+        println!(
+            "\t→ {}\n\t→ {}",
+            module1.path.display(),
+            module2.path.display()
+        );
+
+        Some(Comparison {
+            path1: &module1.path,
+            path2: &module2.path,
+            similarity_pct: percent,
+        })
+    } else {
+        // The files are too different.
+        None
     }
 }
 
-/// Determine if we can skip comparing this module, because it's common content.
-fn can_skip(module: &Module) -> bool {
-    let string = module.path.file_name().and_then(OsStr::to_str);
+impl Module {
+    /// Determine if we can skip comparing this module, because it's common content.
+    fn can_skip(&self) -> bool {
+        let string = self.path.file_name().and_then(OsStr::to_str);
 
-    match string {
-        Some(s) => IGNORED_FILE_NAMES.contains(&s),
-        None => false,
+        let skip = match string {
+            Some(s) => IGNORED_FILE_NAMES.contains(&s),
+            None => false,
+        };
+
+        if skip {
+            log::debug!("Skipping file {:?}", &self.path);
+        }
+
+        skip
     }
 }
 
