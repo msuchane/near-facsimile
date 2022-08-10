@@ -1,3 +1,4 @@
+use std::convert::From;
 use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -33,8 +34,11 @@ struct Module {
 pub struct Comparison<'a> {
     path1: &'a Path,
     path2: &'a PathBuf,
-    similarity_pct: f64,
+    similarity_pct: Percentage,
 }
+
+#[derive(Debug, PartialEq)]
+struct Percentage(f64);
 
 pub fn run(options: &Cli) -> Result<()> {
     let base_path = &options.path;
@@ -124,12 +128,12 @@ fn compare_modules<'a>(
     let similarity = compare_fn(&module1.content, &module2.content);
 
     if similarity > options.threshold {
-        let percent = to_percent(similarity);
+        let percent = Percentage::from(similarity);
 
         if similarity >= 1.0 {
             let message = format!(
                 "[{}/{}] These two files are identical ({:.1}%):",
-                index, total, percent
+                index, total, percent.0
             );
             println!(
                 "{}",
@@ -138,7 +142,7 @@ fn compare_modules<'a>(
         } else {
             let message = format!(
                 "[{}/{}] These two files are similar ({:.1}%):",
-                index, total, percent
+                index, total, percent.0
             );
             println!(
                 "{}",
@@ -215,20 +219,22 @@ fn visit_dirs(dir: &Path) -> Result<Vec<Module>> {
     Ok(files)
 }
 
-/// We display the percentage with the accuracy of one decimal place, rounded.
-/// If the percentage is above 99.9, it might get rounded up to 100,
-/// which would suggest to the user that the files are identical,
-/// even if they aren't fully 100.0% similar.
-///
-/// To avoid the confusion, round everything between 99.9 and 100.0 down
-/// to 99.9. Thus, 100.0% is reserved for identical files.
-fn to_percent(similarity: f64) -> f64 {
-    let percent = similarity * 100.0;
+impl From<f64> for Percentage {
+    /// We display the percentage with the accuracy of one decimal place, rounded.
+    /// If the percentage is above 99.9, it might get rounded up to 100,
+    /// which would suggest to the user that the files are identical,
+    /// even if they aren't fully 100.0% similar.
+    ///
+    /// To avoid the confusion, round everything between 99.9 and 100.0 down
+    /// to 99.9. Thus, 100.0% is reserved for identical files.
+    fn from(item: f64) -> Self {
+        let percent = item * 100.0;
 
-    if 99.9 < percent && percent < 100.0 {
-        99.9
-    } else {
-        percent
+        if 99.9 < percent && percent < 100.0 {
+            Self(99.9)
+        } else {
+            Self(percent)
+        }
     }
 }
 
@@ -238,11 +244,11 @@ mod tests {
 
     #[test]
     fn check_percentage() {
-        assert_eq!(90.0, to_percent(0.9));
-        assert_eq!(99.9, to_percent(0.999));
-        assert_eq!(100.0, to_percent(1.0));
+        assert_eq!(90.0, Percentage::from(0.9).0);
+        assert_eq!(99.9, Percentage::from(0.999).0);
+        assert_eq!(100.0, Percentage::from(1.0).0);
 
         // This is the interesting case:
-        assert_eq!(99.9, to_percent(0.99999999));
+        assert_eq!(99.9, Percentage::from(0.99999999).0);
     }
 }
