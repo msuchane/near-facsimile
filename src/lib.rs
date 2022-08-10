@@ -1,19 +1,18 @@
 use std::convert::From;
 use std::ffi::OsStr;
-use std::fs;
-use std::io;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use color_eyre::{eyre::bail, Result};
 use permutator::Combination;
-use rayon::prelude::*;
 
 pub mod cli;
 mod comparison;
+mod load_files;
 mod serialize;
 
 use cli::Cli;
 use comparison::{comparisons, Comparison};
+use load_files::files;
 use serialize::serialize;
 
 const IGNORED_FILE_NAMES: [&str; 6] = [
@@ -78,17 +77,6 @@ pub fn init_log_and_errors(verbose: u8) -> Result<()> {
     Ok(())
 }
 
-/// Load files and filter out those that are ignored by the comparisons.
-fn files(options: &Cli) -> Result<Vec<Module>> {
-    let base_path = &options.path;
-
-    let files = visit_dirs(base_path)?;
-    Ok(files
-        .into_par_iter()
-        .filter(|file| !file.can_skip())
-        .collect())
-}
-
 impl Module {
     /// Determine if we can skip comparing this module, because it's common content.
     fn can_skip(&self) -> bool {
@@ -105,48 +93,6 @@ impl Module {
 
         skip
     }
-}
-
-/// Recursively load all files in this directory as a Vec.
-fn visit_dirs(dir: &Path) -> Result<Vec<Module>> {
-    let mut files = Vec::new();
-
-    // Look for files with this extension. Ignore the rest.
-    let extension: &OsStr = OsStr::new("adoc");
-
-    for entry in fs::read_dir(dir)? {
-        let path = entry?.path();
-        // println!("Entry: {:?}", &path);
-        if path.is_symlink() {
-            log::debug!("Skipping the symbolic link: {:?}", &path);
-        } else if path.is_dir() {
-            log::debug!("Descending into directory: {:?}", &path);
-            files.append(&mut visit_dirs(&path)?);
-        } else if path.is_file() && path.extension() == Some(extension) {
-            log::debug!("Loading file: {:?}", &path);
-            match fs::read_to_string(&path) {
-                // If the file is UTF-8 text, add it to the list of files.
-                Ok(content) => {
-                    let module = Module { path, content };
-                    files.push(module);
-                }
-                // If we can't read the file:
-                Err(e) => {
-                    // If we can't read it because it's not UTF-8, just skip the file.
-                    if e.kind() == io::ErrorKind::InvalidData {
-                        log::debug!(
-                            "Skipping file that is not valid UTF-8 text: {}",
-                            path.display()
-                        );
-                    // If we can't read it for any other reason, exit with the contained error.
-                    } else {
-                        Err(e)?;
-                    }
-                }
-            };
-        }
-    }
-    Ok(files)
 }
 
 impl From<f64> for Percentage {
