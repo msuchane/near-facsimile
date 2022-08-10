@@ -62,3 +62,9 @@ By default, the tool uses the Levenshtein metric, which is accurate but rather s
 ```
 $ similar-adoc-modules --fast
 ```
+
+If you specify the `--fast` option twice (`-ff`), the tool uses the relatively rudimentary but very fast trigram comparison instead:
+
+```
+$ similar-adoc-modules --fast --fast
+```
