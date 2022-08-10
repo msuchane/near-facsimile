@@ -115,11 +115,13 @@ fn compare_modules<'a>(
         return None;
     }
 
-    let similarity = if options.fast {
-        strsim::jaro(&module1.content, &module2.content)
+    // Jaro is about 200% the speed of Levenshtein. The user can pick.
+    let compare_fn = if options.fast {
+        strsim::jaro
     } else {
-        strsim::normalized_levenshtein(&module1.content, &module2.content)
+        strsim::normalized_levenshtein
     };
+    let similarity = compare_fn(&module1.content, &module2.content);
 
     if similarity > options.threshold {
         let percent = similarity * 100.0;
