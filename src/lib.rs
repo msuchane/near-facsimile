@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 
 use color_eyre::Result;
 use owo_colors::{OwoColorize, Stream};
+use permutator::Combination;
 use rayon::prelude::*;
 
 pub mod cli;
@@ -22,6 +23,7 @@ const IGNORED_FILE_NAMES: [&str; 6] = [
 ];
 
 /// Represents a loaded AsciiDoc file, with its path and content.
+#[derive(Clone, Debug)]
 struct Module {
     path: PathBuf,
     content: String,
@@ -40,24 +42,23 @@ pub fn run(options: &Cli) -> Result<()> {
     log::info!("Loading files…");
     let files = visit_dirs(base_path)?;
 
+    // Combinations by 2 pair each file with each file, so that no comparison
+    // occurs more than once.
+    let combinations: Vec<(&Module, &Module)> =
+        files.combination(2).map(|v| (v[0], v[1])).collect();
+    
+    // The total number of combinations, and also of needed comparisons.
+    let total = combinations.len();
+
     log::info!("Comparing files…");
 
-    let comparisons: Vec<Comparison> =
-        files
-            .iter()
-            .enumerate()
-            .fold(Vec::new(), |mut acc, (index1, module1)| {
-                let starting_index = index1 + 1;
-
-                let mut comparisons: Vec<Comparison> = files[starting_index..]
-                    .par_iter()
-                    .filter_map(|module2| compare_modules(module1, module2, options))
-                    .collect();
-
-                acc.append(&mut comparisons);
-
-                acc
-            });
+    let comparisons: Vec<Comparison> = combinations
+        .par_iter()
+        .enumerate()
+        .filter_map(|(index, (module1, module2))| {
+            compare_modules(module1, module2, index, total, options)
+        })
+        .collect();
 
     log::info!("Producing a CSV table…");
     serialize(comparisons, options)?;
@@ -92,8 +93,11 @@ pub fn init_log_and_errors(verbose: u8) -> Result<()> {
 fn compare_modules<'a>(
     module1: &'a Module,
     module2: &'a Module,
+    index: usize,
+    total: usize,
     options: &Cli,
 ) -> Option<Comparison<'a>> {
+    log::debug!("File #{}/{}", index, total);
     if module1.path == module2.path {
         log::warn!("Comparing the same files.");
         None
@@ -110,13 +114,19 @@ fn compare_modules<'a>(
             let percent = similarity * 100.0;
 
             if similarity >= 1.0 {
-                let message = format!("These two files are identical ({:.1}%):", percent);
+                let message = format!(
+                    "[{}/{}] These two files are identical ({:.1}%):",
+                    index, total, percent
+                );
                 println!(
                     "{}",
                     message.if_supports_color(Stream::Stdout, OwoColorize::red)
                 );
             } else {
-                let message = format!("These two files are similar ({:.1}%):", percent);
+                let message = format!(
+                    "[{}/{}] These two files are similar ({:.1}%):",
+                    index, total, percent
+                );
                 println!(
                     "{}",
                     message.if_supports_color(Stream::Stdout, OwoColorize::yellow)
