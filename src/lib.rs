@@ -103,11 +103,24 @@ fn compare_modules<'a>(
 ) -> Option<Comparison<'a>> {
     log::debug!("Comparison #{}/{}", index, total);
 
+    // Calculate the trigram similarity of the two files. This only takes
+    // about 10% of the time needed for Jaro, or about 5% of Levenshtein.
+    // Use teh value to pre-select files for comparison.
+    let trig_sim: f64 = trigram::similarity(&module1.content, &module2.content).into();
+
+    // Require that the trigram similarity is at least half of the set similarity threshold.
+    // If it's lower than half of the threshold, skip the actual, expensive comparison.
+    if trig_sim < options.threshold / 2.0 {
+        log::debug!("Trigram similarity below the threshold: {:.3}", trig_sim);
+        return None;
+    }
+
     let similarity = if options.fast {
         strsim::jaro(&module1.content, &module2.content)
     } else {
         strsim::normalized_levenshtein(&module1.content, &module2.content)
     };
+
     if similarity > options.threshold {
         let percent = similarity * 100.0;
 
@@ -133,7 +146,12 @@ fn compare_modules<'a>(
         println!(
             "\t→ {}\n\t→ {}",
             module1.path.display(),
-            module2.path.display()
+            module2.path.display(),
+        );
+        log::debug!(
+            "Similarity above the threshold:\n\tDistance: {:.3}, Trigram: {:.3}",
+            similarity,
+            trig_sim
         );
 
         Some(Comparison {
@@ -143,6 +161,11 @@ fn compare_modules<'a>(
         })
     } else {
         // The files are too different.
+        log::debug!(
+            "Similarity below the threshold:\n\tDistance: {:.3}, Trigram: {:.3}",
+            similarity,
+            trig_sim
+        );
         None
     }
 }
