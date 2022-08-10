@@ -1,6 +1,7 @@
 use std::convert::From;
 use std::ffi::OsStr;
 use std::fs;
+use std::io;
 use std::path::{Path, PathBuf};
 
 use color_eyre::{eyre::bail, Result};
@@ -123,9 +124,26 @@ fn visit_dirs(dir: &Path) -> Result<Vec<Module>> {
             files.append(&mut visit_dirs(&path)?);
         } else if path.is_file() && path.extension() == Some(extension) {
             log::debug!("Loading file: {:?}", &path);
-            let content = fs::read_to_string(&path)?;
-            let module = Module { path, content };
-            files.push(module);
+            match fs::read_to_string(&path) {
+                // If the file is UTF-8 text, add it to the list of files.
+                Ok(content) => {
+                    let module = Module { path, content };
+                    files.push(module);
+                }
+                // If we can't read the file:
+                Err(e) => {
+                    // If we can't read it because it's not UTF-8, just skip the file.
+                    if e.kind() == io::ErrorKind::InvalidData {
+                        log::debug!(
+                            "Skipping file that is not valid UTF-8 text: {}",
+                            path.display()
+                        );
+                    // If we can't read it for any other reason, exit with the contained error.
+                    } else {
+                        Err(e)?;
+                    }
+                }
+            };
         }
     }
     Ok(files)
