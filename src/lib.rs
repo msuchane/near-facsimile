@@ -3,7 +3,7 @@ use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use color_eyre::Result;
+use color_eyre::{eyre::bail, Result};
 use permutator::Combination;
 use rayon::prelude::*;
 
@@ -37,6 +37,10 @@ pub struct Percentage(f64);
 pub fn run(options: &Cli) -> Result<()> {
     log::info!("Loading files…");
     let files = files(options)?;
+
+    if files.len() < 2 {
+        bail!("Too few files that match the settings to compare in this directory.");
+    }
 
     // Combinations by 2 pair each file with each file, so that no comparison
     // occurs more than once.

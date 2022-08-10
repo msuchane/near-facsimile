@@ -12,11 +12,9 @@ pub struct Comparison<'a> {
     pub similarity_pct: Percentage,
 }
 
-pub fn comparisons<'a, T>(
-    combinations: T,
-    options: &Cli,
-) -> Vec<Comparison<'a>>
-    where T: Iterator<Item = (&'a Module, &'a Module)> + Send + ExactSizeIterator
+pub fn comparisons<'a, T>(combinations: T, options: &Cli) -> Vec<Comparison<'a>>
+where
+    T: Iterator<Item = (&'a Module, &'a Module)> + Send + ExactSizeIterator,
 {
     // The total number of combinations, and also of needed comparisons.
     let total = combinations.len();
