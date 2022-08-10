@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use owo_colors::{OwoColorize, Stream};
+use rayon::prelude::*;
 
 use crate::{Cli, Module, Percentage};
 
@@ -11,9 +12,29 @@ pub struct Comparison<'a> {
     pub similarity_pct: Percentage,
 }
 
+pub fn comparisons<'a, T>(
+    combinations: T,
+    options: &Cli,
+) -> Vec<Comparison<'a>>
+    where T: Iterator<Item = (&'a Module, &'a Module)> + Send + ExactSizeIterator
+{
+    // The total number of combinations, and also of needed comparisons.
+    let total = combinations.len();
+
+    combinations
+        .enumerate()
+        // Convert the current sequential iterator to a parallel one.
+        .par_bridge()
+        .filter(|(_index, (mod1, mod2))| similar_trigrams(mod1, mod2, options))
+        .filter_map(|(index, (module1, module2))| {
+            compare_modules(module1, module2, index, total, options)
+        })
+        .collect()
+}
+
 /// Compare the two modules. Print out the report and return a struct with the information.
 /// Returns None if the files were skipped or if they are more different than the threshold.
-pub fn compare_modules<'a>(
+fn compare_modules<'a>(
     module1: &'a Module,
     module2: &'a Module,
     index: usize,
@@ -77,7 +98,7 @@ pub fn compare_modules<'a>(
 /// Calculate the trigram similarity of the two files. This only takes
 /// about 10% of the time needed for Jaro, or about 5% of Levenshtein.
 /// Use the value to pre-select files for comparison.
-pub fn similar_trigrams(module1: &Module, module2: &Module, options: &Cli) -> bool {
+fn similar_trigrams(module1: &Module, module2: &Module, options: &Cli) -> bool {
     let trig_sim: f64 = trigram::similarity(&module1.content, &module2.content).into();
 
     // Require that the trigram similarity is at least half of the set similarity threshold.

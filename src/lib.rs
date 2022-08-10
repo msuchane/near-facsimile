@@ -12,7 +12,7 @@ mod comparison;
 mod serialize;
 
 use cli::Cli;
-use comparison::{compare_modules, similar_trigrams, Comparison};
+use comparison::{comparisons, Comparison};
 use serialize::serialize;
 
 const IGNORED_FILE_NAMES: [&str; 6] = [
@@ -35,33 +35,15 @@ pub struct Module {
 pub struct Percentage(f64);
 
 pub fn run(options: &Cli) -> Result<()> {
-    let base_path = &options.path;
-
     log::info!("Loading files…");
-    let files = visit_dirs(base_path)?;
-    let files: Vec<Module> = files
-        .into_par_iter()
-        .filter(|file| !file.can_skip())
-        .collect();
+    let files = files(options)?;
 
     // Combinations by 2 pair each file with each file, so that no comparison
     // occurs more than once.
     let combinations = files.combination(2).map(|v| (v[0], v[1]));
 
-    // The total number of combinations, and also of needed comparisons.
-    let total = combinations.len();
-
     log::info!("Comparing files…");
-
-    let comparisons: Vec<Comparison> = combinations
-        .enumerate()
-        // Convert the current sequential iterator to a parallel one.
-        .par_bridge()
-        .filter(|(_index, (mod1, mod2))| similar_trigrams(mod1, mod2, options))
-        .filter_map(|(index, (module1, module2))| {
-            compare_modules(module1, module2, index, total, options)
-        })
-        .collect();
+    let comparisons = comparisons(combinations, options);
 
     log::info!("Producing a CSV table…");
     serialize(comparisons, options)?;
@@ -89,6 +71,17 @@ pub fn init_log_and_errors(verbose: u8) -> Result<()> {
     )?;
 
     Ok(())
+}
+
+/// Load files and filter out those that are ignored by the comparisons.
+fn files(options: &Cli) -> Result<Vec<Module>> {
+    let base_path = &options.path;
+
+    let files = visit_dirs(base_path)?;
+    Ok(files
+        .into_par_iter()
+        .filter(|file| !file.can_skip())
+        .collect())
 }
 
 impl Module {
