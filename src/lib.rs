@@ -46,7 +46,7 @@ pub fn run(options: &Cli) -> Result<()> {
     // occurs more than once.
     let combinations: Vec<(&Module, &Module)> =
         files.combination(2).map(|v| (v[0], v[1])).collect();
-    
+
     // The total number of combinations, and also of needed comparisons.
     let total = combinations.len();
 
