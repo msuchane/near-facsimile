@@ -23,9 +23,16 @@ where
         .enumerate()
         // Convert the current sequential iterator to a parallel one.
         .par_bridge()
-        .filter(|(_index, (mod1, mod2))| similar_trigrams(mod1, mod2, options))
-        .filter_map(|(index, (module1, module2))| {
-            compare_modules(module1, module2, index, total, options)
+        .map(|(index, (mod1, mod2))| {
+            (
+                index,
+                (mod1, mod2),
+                trigram_f64(&mod1.content, &mod2.content),
+            )
+        })
+        .filter(|(_index, (mod1, mod2), trigram)| trigram_preselect(*trigram, mod1, mod2, options))
+        .filter_map(|(index, (module1, module2), trigram)| {
+            compare_modules(module1, module2, index, total, trigram, options)
         })
         .collect()
 }
@@ -37,6 +44,7 @@ fn compare_modules<'a>(
     module2: &'a Module,
     index: usize,
     total: usize,
+    trigram: f64,
     options: &Cli,
 ) -> Option<Comparison<'a>> {
     log::debug!("Comparison #{}/{}", index, total);
@@ -48,9 +56,8 @@ fn compare_modules<'a>(
         // Jaro is about 200% the speed of Levenshtein.
         1 => strsim::jaro(&module1.content, &module2.content),
         // Trigram si rudimentary, but very fast.
-        // TODO: Trigram at half the threshold is already part of the iterator pipeline earlier.
-        // This makes Trigram check the file twice, unnecessarily.
-        _ => f64::from(trigram::similarity(&module1.content, &module2.content)),
+        // Reuse the value calculated in the iterator pipeline earlier.
+        _ => trigram,
     };
 
     if similarity > options.threshold {
@@ -97,18 +104,22 @@ fn compare_modules<'a>(
     }
 }
 
-/// Calculate the trigram similarity of the two files. This only takes
+/// Calculate the trigram metric and convert to f64,
+/// so that we can easily compare it with the other metrics.
+fn trigram_f64(content1: &str, content2: &str) -> f64 {
+    f64::from(trigram::similarity(content1, content2))
+}
+
+/// Calculating the trigram only takes
 /// about 10% of the time needed for Jaro, or about 5% of Levenshtein.
 /// Use the value to pre-select files for comparison.
-fn similar_trigrams(module1: &Module, module2: &Module, options: &Cli) -> bool {
-    let trig_sim: f64 = trigram::similarity(&module1.content, &module2.content).into();
-
+fn trigram_preselect(trigram: f64, module1: &Module, module2: &Module, options: &Cli) -> bool {
     // Require that the trigram similarity is at least half of the set similarity threshold.
     // If it's lower than half of the threshold, skip the actual, expensive comparison.
-    if trig_sim < options.threshold / 2.0 {
+    if trigram < options.threshold / 2.0 {
         log::debug!(
             "Trigram similarity below the threshold: {:.3}\n\t→{}\n\t→{}",
-            trig_sim,
+            trigram,
             module1.path.display(),
             module2.path.display()
         );
