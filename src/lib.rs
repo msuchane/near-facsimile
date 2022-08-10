@@ -52,17 +52,17 @@ pub fn run(options: &Cli) -> Result<()> {
 
     // Combinations by 2 pair each file with each file, so that no comparison
     // occurs more than once.
-    let combinations: Vec<(&Module, &Module)> =
-        files.combination(2).map(|v| (v[0], v[1])).collect();
+    let combinations =
+        files.combination(2).map(|v| (v[0], v[1]));
 
     // The total number of combinations, and also of needed comparisons.
     let total = combinations.len();
 
     log::info!("Comparing files…");
 
-    let comparisons: Vec<Comparison> = combinations
-        .par_iter()
-        .enumerate()
+    let comparisons: Vec<Comparison> = combinations.enumerate()
+        // Convert the current sequential iterator to a parallel one.
+        .par_bridge()
         .filter(|(_index, (mod1, mod2))| similar_trigrams(mod1, mod2, options))
         .filter_map(|(index, (module1, module2))| {
             compare_modules(module1, module2, index, total, options)
