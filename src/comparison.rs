@@ -41,13 +41,17 @@ fn compare_modules<'a>(
 ) -> Option<Comparison<'a>> {
     log::debug!("Comparison #{}/{}", index, total);
 
-    // Jaro is about 200% the speed of Levenshtein. The user can pick.
-    let compare_fn = if options.fast {
-        strsim::jaro
-    } else {
-        strsim::normalized_levenshtein
+    // The user can pick the accuracy and speed of the comaprison.
+    let similarity = match options.fast {
+        // Levenshtein is slow and accurate. Default.
+        0 => strsim::normalized_levenshtein(&module1.content, &module2.content),
+        // Jaro is about 200% the speed of Levenshtein.
+        1 => strsim::jaro(&module1.content, &module2.content),
+        // Trigram si rudimentary, but very fast.
+        // TODO: Trigram at half the threshold is already part of the iterator pipeline earlier.
+        // This makes Trigram check the file twice, unnecessarily.
+        _ => f64::from(trigram::similarity(&module1.content, &module2.content)),
     };
-    let similarity = compare_fn(&module1.content, &module2.content);
 
     if similarity > options.threshold {
         let percent = Percentage::from(similarity);

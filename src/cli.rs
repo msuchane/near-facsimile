@@ -14,8 +14,8 @@ pub struct Cli {
     pub threshold: f64,
 
     /// Use a faster but less precise comparison method
-    #[clap(short, long, action)]
-    pub fast: bool,
+    #[clap(short, long, action = clap::ArgAction::Count)]
+    pub fast: u8,
 
     /// Display progress and debugging information
     #[clap(short, long, action = clap::ArgAction::Count)]
