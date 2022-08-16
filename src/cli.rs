@@ -1,3 +1,4 @@
+use std::ffi::OsString;
 use std::path::PathBuf;
 
 use clap::Parser;
@@ -28,6 +29,22 @@ pub struct Cli {
     /// Path to the output JSON file
     #[clap(short, long, value_name = "FILE", default_value = "comparisons.json")]
     pub json: PathBuf,
+
+    /// Ignore these file names in the search and comparison
+    #[clap(long, value_name = "NAMES")]
+    pub ignore_files: Vec<OsString>,
+
+    /// Ignore these file extensions in the search and comparison
+    #[clap(long, value_name = "EXTENSIONS")]
+    pub ignore_ext: Vec<OsString>,
+
+    /// Look for these file names in the search and comparison
+    #[clap(long, value_name = "NAMES")]
+    pub require_files: Vec<OsString>,
+
+    /// Look for these file extensions in the search and comparison
+    #[clap(long, value_name = "EXTENSIONS")]
+    pub require_ext: Vec<OsString>,
 }
 
 /// Parse the current command-line options.
