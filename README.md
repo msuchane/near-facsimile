@@ -50,13 +50,13 @@ The following options are available:
 ### Specifying the documentation directory
 
 ```
-$ near-facsimile <path-to-directory>
+$ near-facsimile --path <path-to-directory>
 ```
 
 ### Saving the CSV table to a different file
 
 ```
-$ near-facsimile --csv-path <path-to-new-file>
+$ near-facsimile --csv <path-to-new-file>
 ```
 
 ### Setting the lowest reported similarity threshold
