@@ -14,9 +14,9 @@ use comparison::{comparisons, Comparison};
 use load_files::files;
 use serialize::serialize;
 
-/// Represents a loaded AsciiDoc file, with its path and content.
+/// Represents a loaded text file, with its path and content.
 #[derive(Debug)]
-pub struct Module {
+pub struct File {
     pub path: PathBuf,
     pub content: String,
 }

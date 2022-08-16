@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use owo_colors::{OwoColorize, Stream};
 use rayon::prelude::*;
 
-use crate::{Cli, Module, Percentage};
+use crate::{Cli, File, Percentage};
 
 #[derive(Debug)]
 pub struct Comparison<'a> {
@@ -17,8 +17,8 @@ pub struct Comparison<'a> {
 struct ComparedPair<'a> {
     index: usize,
     total: usize,
-    module1: &'a Module,
-    module2: &'a Module,
+    file1: &'a File,
+    file2: &'a File,
     trigram: f64,
 }
 
@@ -33,8 +33,8 @@ impl ComparedPair<'_> {
             log::debug!(
                 "Trigram similarity below the threshold: {:.3}\n\t→{}\n\t→{}",
                 self.trigram,
-                self.module1.path.display(),
-                self.module2.path.display()
+                self.file1.path.display(),
+                self.file2.path.display()
             );
             false
         } else {
@@ -45,7 +45,7 @@ impl ComparedPair<'_> {
 
 pub fn comparisons<'a, T>(combinations: T, options: &Cli) -> Vec<Comparison<'a>>
 where
-    T: Iterator<Item = (&'a Module, &'a Module)> + Send + ExactSizeIterator,
+    T: Iterator<Item = (&'a File, &'a File)> + Send + ExactSizeIterator,
 {
     // The total number of combinations, and also of needed comparisons.
     let total = combinations.len();
@@ -54,29 +54,29 @@ where
         .enumerate()
         // Convert the current sequential iterator to a parallel one.
         .par_bridge()
-        .map(|(index, (module1, module2))| ComparedPair {
+        .map(|(index, (file1, file2))| ComparedPair {
             index,
             total,
-            module1,
-            module2,
-            trigram: trigram_f64(&module1.content, &module2.content),
+            file1,
+            file2,
+            trigram: trigram_f64(&file1.content, &file2.content),
         })
         .filter(|pair| pair.trigram_preselect(options))
-        .filter_map(|pair| compare_modules(&pair, options))
+        .filter_map(|pair| compare_files(&pair, options))
         .collect()
 }
 
-/// Compare the two modules. Print out the report and return a struct with the information.
+/// Compare the two files. Print out the report and return a struct with the information.
 /// Returns None if the files were skipped or if they are more different than the threshold.
-fn compare_modules<'a>(pair: &ComparedPair<'a>, options: &Cli) -> Option<Comparison<'a>> {
+fn compare_files<'a>(pair: &ComparedPair<'a>, options: &Cli) -> Option<Comparison<'a>> {
     log::debug!("Comparison #{}/{}", pair.index, pair.total);
 
-    // The user can pick the accuracy and speed of the comaprison.
+    // The user can pick the accuracy and speed of the comparison.
     let similarity = match options.fast {
         // Levenshtein is slow and accurate. Default.
-        0 => strsim::normalized_levenshtein(&pair.module1.content, &pair.module2.content),
+        0 => strsim::normalized_levenshtein(&pair.file1.content, &pair.file2.content),
         // Jaro is about 200% the speed of Levenshtein.
-        1 => strsim::jaro(&pair.module1.content, &pair.module2.content),
+        1 => strsim::jaro(&pair.file1.content, &pair.file2.content),
         // Trigram si rudimentary, but very fast.
         // Reuse the value calculated in the iterator pipeline earlier.
         _ => pair.trigram,
@@ -110,8 +110,8 @@ fn compare_modules<'a>(pair: &ComparedPair<'a>, options: &Cli) -> Option<Compari
         };
         println!(
             "\t→ {}\n\t→ {}",
-            pair.module1.path.display(),
-            pair.module2.path.display(),
+            pair.file1.path.display(),
+            pair.file2.path.display(),
         );
         log::debug!(
             "Similarity above the threshold:\n\tDistance: {:.3}",
@@ -119,8 +119,8 @@ fn compare_modules<'a>(pair: &ComparedPair<'a>, options: &Cli) -> Option<Compari
         );
 
         Some(Comparison {
-            path1: &pair.module1.path,
-            path2: &pair.module2.path,
+            path1: &pair.file1.path,
+            path2: &pair.file2.path,
             similarity_pct: percent,
         })
     } else {

@@ -6,17 +6,17 @@ use std::path::{Path, PathBuf};
 use color_eyre::Result;
 use ignore::Walk;
 
-use crate::{Cli, Module};
+use crate::{Cli, File};
 
 /// Load files and filter out those that are ignored by the comparisons.
-pub fn files(options: &Cli) -> Result<Vec<Module>> {
+pub fn files(options: &Cli) -> Result<Vec<File>> {
     let base_path = &options.path;
 
     visit_dirs(base_path, options)
 }
 
 /// Recursively load all files in this directory as a Vec.
-fn visit_dirs(dir: &Path, options: &Cli) -> Result<Vec<Module>> {
+fn visit_dirs(dir: &Path, options: &Cli) -> Result<Vec<File>> {
     let mut files = Vec::new();
     let walk = Walk::new(dir);
 
@@ -25,8 +25,8 @@ fn visit_dirs(dir: &Path, options: &Cli) -> Result<Vec<Module>> {
         let path = entry.path();
 
         if path.is_file() && wanted(path, options) {
-            if let Some(module) = load_file(entry.into_path())? {
-                files.push(module);
+            if let Some(file) = load_file(entry.into_path())? {
+                files.push(file);
             }
         }
     }
@@ -34,13 +34,13 @@ fn visit_dirs(dir: &Path, options: &Cli) -> Result<Vec<Module>> {
     Ok(files)
 }
 
-/// Load the content of a file as `Module`, if the file is valid UTF-8 text.
+/// Load the content of a file as `File`, if the file is valid UTF-8 text.
 /// Returns `Ok(None)` if the file is accessible but not text.
-fn load_file(path: PathBuf) -> Result<Option<Module>> {
+fn load_file(path: PathBuf) -> Result<Option<File>> {
     log::debug!("Loading file: {:?}", &path);
     match fs::read_to_string(&path) {
         // If the file is UTF-8 text, add it to the list of files.
-        Ok(content) => Ok(Some(Module { path, content })),
+        Ok(content) => Ok(Some(File { path, content })),
         // If we can't read the file:
         Err(e) => {
             // If we can't read it because it's not UTF-8, just skip the file.
