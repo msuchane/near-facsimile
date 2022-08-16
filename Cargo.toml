@@ -1,14 +1,14 @@
 [package]
-name = "similar-adoc-modules"
+name = "near-facsimile"
 version = "0.6.0"
 edition = "2021"
 rust-version = "1.58"
 authors = ["Marek Suchánek <msuchane@redhat.com>"]
 license = "Apache-2.0"
-description = "Find similar or identical files in Red Hat documentation"
-repository = "https://github.com/msuchane/similar-adoc-modules/"
+description = "Find similar or identical text files in a directory"
+repository = "https://github.com/msuchane/near-facsimile/"
 readme = "README.md"
-keywords = ["Red Hat", "documentation"]
+keywords = ["duplicate", "similarity", "similar", "compare"]
 categories = ["command-line-utilities", "text-processing"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -29,10 +29,10 @@ trigram = "0.4"
 ignore = "0.4"
 
 [package.metadata.rpm]
-package = "similar-adoc-modules"
+package = "near-facsimile"
 
 [package.metadata.rpm.cargo]
 buildflags = ["--release"]
 
 [package.metadata.rpm.targets]
-similar-adoc-modules = { path = "/usr/bin/similar-adoc-modules" }
+near-facsimile = { path = "/usr/bin/near-facsimile" }

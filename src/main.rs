@@ -1,6 +1,6 @@
 use color_eyre::eyre::Result;
 
-use similar_adoc_modules::{cli, init_log_and_errors, run};
+use near_facsimile::{cli, init_log_and_errors, run};
 
 fn main() -> Result<()> {
     let options = cli::options();
