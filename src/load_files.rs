@@ -12,15 +12,15 @@ use crate::{Cli, Module};
 pub fn files(options: &Cli) -> Result<Vec<Module>> {
     let base_path = &options.path;
 
-    let files = visit_dirs(base_path)?;
+    let files = visit_dirs(base_path, options)?;
     Ok(files
         .into_par_iter()
-        .filter(|file| !file.can_skip())
+        .filter(|file| !file.can_skip(options))
         .collect())
 }
 
 /// Recursively load all files in this directory as a Vec.
-fn visit_dirs(dir: &Path) -> Result<Vec<Module>> {
+fn visit_dirs(dir: &Path, options: &Cli) -> Result<Vec<Module>> {
     let mut files = Vec::new();
 
     // Look for files with this extension. Ignore the rest.
@@ -33,7 +33,7 @@ fn visit_dirs(dir: &Path) -> Result<Vec<Module>> {
             log::debug!("Skipping the symbolic link: {:?}", &path);
         } else if path.is_dir() {
             log::debug!("Descending into directory: {:?}", &path);
-            files.append(&mut visit_dirs(&path)?);
+            files.append(&mut visit_dirs(&path, options)?);
         } else if path.is_file() && path.extension() == Some(extension) {
             log::debug!("Loading file: {:?}", &path);
             match fs::read_to_string(&path) {

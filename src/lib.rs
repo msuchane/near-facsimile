@@ -15,15 +15,6 @@ use comparison::{comparisons, Comparison};
 use load_files::files;
 use serialize::serialize;
 
-const IGNORED_FILE_NAMES: [&str; 6] = [
-    "master.adoc",
-    "main.adoc",
-    "_attributes.adoc",
-    "_local-attributes.adoc",
-    "_title-attributes.adoc",
-    "README.adoc",
-];
-
 /// Represents a loaded AsciiDoc file, with its path and content.
 #[derive(Debug)]
 pub struct Module {
@@ -79,11 +70,11 @@ pub fn init_log_and_errors(verbose: u8) -> Result<()> {
 
 impl Module {
     /// Determine if we can skip comparing this module, because it's common content.
-    fn can_skip(&self) -> bool {
-        let string = self.path.file_name().and_then(OsStr::to_str);
+    fn can_skip(&self, options: &Cli) -> bool {
+        let name = self.path.file_name().map(OsStr::to_os_string);
 
-        let skip = match string {
-            Some(s) => IGNORED_FILE_NAMES.contains(&s),
+        let skip = match name {
+            Some(s) => options.ignore_file.contains(&s),
             None => false,
         };
 

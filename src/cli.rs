@@ -30,20 +30,20 @@ pub struct Cli {
     #[clap(short, long, value_name = "FILE", default_value = "comparisons.json")]
     pub json: PathBuf,
 
-    /// Ignore these file names in the search and comparison
-    #[clap(long, value_name = "NAMES")]
-    pub ignore_files: Vec<OsString>,
+    /// Ignore this file name in the search and comparison
+    #[clap(long, value_name = "NAME")]
+    pub ignore_file: Vec<OsString>,
 
-    /// Ignore these file extensions in the search and comparison
-    #[clap(long, value_name = "EXTENSIONS")]
+    /// Ignore this file extension in the search and comparison
+    #[clap(long, value_name = "EXTENSION")]
     pub ignore_ext: Vec<OsString>,
 
-    /// Look for these file names in the search and comparison
-    #[clap(long, value_name = "NAMES")]
-    pub require_files: Vec<OsString>,
+    /// Look for this file name in the search and comparison
+    #[clap(long, value_name = "NAME")]
+    pub require_file: Vec<OsString>,
 
-    /// Look for these file extensions in the search and comparison
-    #[clap(long, value_name = "EXTENSIONS")]
+    /// Look for this file extension in the search and comparison
+    #[clap(long, value_name = "EXTENSION")]
     pub require_ext: Vec<OsString>,
 }
 
