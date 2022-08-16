@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use color_eyre::Result;
 
 use crate::Cli;
@@ -6,7 +8,7 @@ use crate::Comparison;
 /// Serialize the resulting comparisons as a CSV table.
 pub fn serialize(mut comparisons: Vec<Comparison>, options: &Cli) -> Result<()> {
     // Prepare to write to the CSV file.
-    let mut wtr = csv::Writer::from_path(&options.csv_path)?;
+    let mut wtr = csv::Writer::from_path(&options.csv)?;
 
     // The CSV header:
     wtr.write_record(&["% similar", "File 1", "File 2"])?;
@@ -20,8 +22,8 @@ pub fn serialize(mut comparisons: Vec<Comparison>, options: &Cli) -> Result<()> 
     for comparison in &comparisons {
         wtr.write_record(&[
             format!("{:.1}", comparison.similarity_pct.0),
-            comparison.path1.display().to_string(),
-            comparison.path2.display().to_string(),
+            stripped_path(&comparison.path1, options)?,
+            stripped_path(&comparison.path2, options)?,
         ])?;
     }
 
@@ -29,4 +31,12 @@ pub fn serialize(mut comparisons: Vec<Comparison>, options: &Cli) -> Result<()> 
     wtr.flush()?;
 
     Ok(())
+}
+
+/// Present the file path without the common, shared prefix
+/// of the root comparison directory.
+fn stripped_path(path: &Path, options: &Cli) -> Result<String> {
+    let stripped = path.strip_prefix(&options.path)?;
+
+    Ok(stripped.display().to_string())
 }

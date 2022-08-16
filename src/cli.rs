@@ -6,7 +6,7 @@ use clap::Parser;
 #[clap(author, version, about, long_about = None)]
 pub struct Cli {
     /// Path to the root documentation directory
-    #[clap(value_parser, value_name = "DIR", default_value = ".")]
+    #[clap(short, long, value_parser, value_name = "DIR", default_value = ".")]
     pub path: PathBuf,
 
     /// The similarity fraction above which to report files
@@ -23,22 +23,8 @@ pub struct Cli {
 
     /// Path to the output CSV file
     #[clap(short, long, value_name = "FILE", default_value = "comparisons.csv")]
-    pub csv_path: PathBuf,
-    //#[clap(subcommand)]
-    //command: Option<Commands>,
+    pub csv: PathBuf,
 }
-
-/*
-#[derive(Subcommand)]
-enum Commands {
-    /// does testing things
-    Test {
-        /// lists test values
-        #[clap(short, long, action)]
-        list: bool,
-    },
-}
-*/
 
 /// Parse the current command-line options.
 #[must_use]
