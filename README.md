@@ -15,9 +15,9 @@
 
     [“reasonable facsimile,” _Merriam-Webster.com Dictionary_](https://www.merriam-webster.com/dictionary/reasonable%20facsimile)
 
-## Usage
+## Installation
 
-1. On Fedora, RHEL, or CentOS, install this program from the Copr repository:
+* On Fedora, RHEL, or CentOS, install this program from the Copr repository:
 
     1. Enable the repository:
 
@@ -31,13 +31,15 @@
         # dnf install near-facsimile
         ```
 
-2. Recursively examine a directory of text files:
+## Usage
+
+* Recursively examine a directory of text files:
 
     ```
     dir-with-text]$ near-facsimile
     ```
 
-3. The program continually prints out file information to the terminal.
+    The program continually prints out file information to the terminal.
 
     Finally, it saves all statistics sorted by file similarity to the `comparisons.csv` and `comparisons.json` files in the current directory.
 
