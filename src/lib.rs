@@ -96,6 +96,17 @@ impl Module {
 }
 
 impl From<f64> for Percentage {
+    /// Store percentage simply as a multiple of the float by 100.
+    fn from(item: f64) -> Self {
+        let percent = item * 100.0;
+        Self(percent)
+    }
+}
+
+impl Percentage {
+    /// Round the percentage value in a way that makes sure that values above 99.9%
+    /// aren't mistaken for identical duplicates (100%).
+    ///
     /// We display the percentage with the accuracy of one decimal place, rounded.
     /// If the percentage is above 99.9, it might get rounded up to 100,
     /// which would suggest to the user that the files are identical,
@@ -103,13 +114,13 @@ impl From<f64> for Percentage {
     ///
     /// To avoid the confusion, round everything between 99.9 and 100.0 down
     /// to 99.9. Thus, 100.0% is reserved for identical files.
-    fn from(item: f64) -> Self {
-        let percent = item * 100.0;
+    fn rounded(&self) -> f64 {
+        let upscaled = self.0 * 10.0;
 
-        if 99.9 < percent && percent < 100.0 {
-            Self(99.9)
+        if 999.0 < upscaled && upscaled < 1000.0 {
+            99.9
         } else {
-            Self(percent)
+            upscaled.round() / 10.0
         }
     }
 }
@@ -120,11 +131,11 @@ mod tests {
 
     #[test]
     fn check_percentage() {
-        assert_eq!(90.0, Percentage::from(0.9).0);
-        assert_eq!(99.9, Percentage::from(0.999).0);
-        assert_eq!(100.0, Percentage::from(1.0).0);
+        assert_eq!(90.0, Percentage::from(0.9).rounded());
+        assert_eq!(99.9, Percentage::from(0.999).rounded());
+        assert_eq!(100.0, Percentage::from(1.0).rounded());
 
         // This is the interesting case:
-        assert_eq!(99.9, Percentage::from(0.99999999).0);
+        assert_eq!(99.9, Percentage::from(0.99999999).rounded());
     }
 }

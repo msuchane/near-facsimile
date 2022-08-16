@@ -19,7 +19,7 @@ impl OutputComparison {
     /// Convert from the internal `Comparison` format to the serializable `OutputComparison` format.
     fn from_internal(comparison: Comparison, options: &Cli) -> Result<Self> {
         Ok(Self {
-            pct_similar: comparison.similarity_pct.0,
+            pct_similar: comparison.similarity_pct.rounded(),
             file1: stripped_path(comparison.path1, options)?,
             file2: stripped_path(comparison.path1, options)?,
         })
@@ -55,7 +55,7 @@ fn as_csv(comparisons: &[OutputComparison], options: &Cli) -> Result<()> {
     // Each comparison entry writes a row in the CSV table.
     for comparison in comparisons {
         wtr.write_record(&[
-            &format!("{:.1}", comparison.pct_similar),
+            &comparison.pct_similar.to_string(),
             &comparison.file1,
             &comparison.file2,
         ])?;

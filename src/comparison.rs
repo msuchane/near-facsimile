@@ -88,7 +88,9 @@ fn compare_modules<'a>(pair: &ComparedPair<'a>, options: &Cli) -> Option<Compari
         if similarity >= 1.0 {
             let message = format!(
                 "[{}/{}] These two files are identical ({:.1}%):",
-                pair.index, pair.total, percent.0
+                pair.index,
+                pair.total,
+                percent.rounded()
             );
             println!(
                 "{}",
@@ -97,7 +99,9 @@ fn compare_modules<'a>(pair: &ComparedPair<'a>, options: &Cli) -> Option<Compari
         } else {
             let message = format!(
                 "[{}/{}] These two files are similar ({:.1}%):",
-                pair.index, pair.total, percent.0
+                pair.index,
+                pair.total,
+                percent.rounded()
             );
             println!(
                 "{}",
