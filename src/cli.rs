@@ -31,11 +31,11 @@ pub struct Cli {
     pub json: PathBuf,
 
     /// Ignore this file name in the search and comparison
-    #[clap(long, value_name = "NAME")]
+    #[clap(long, value_name = "NAME", conflicts_with = "require-file")]
     pub ignore_file: Vec<OsString>,
 
     /// Ignore this file extension in the search and comparison
-    #[clap(long, value_name = "EXTENSION")]
+    #[clap(long, value_name = "EXTENSION", conflicts_with = "require-ext")]
     pub ignore_ext: Vec<OsString>,
 
     /// Look for this file name in the search and comparison
