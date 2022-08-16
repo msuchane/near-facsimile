@@ -3,17 +3,17 @@
 [![Rust tests](https://github.com/msuchane/near-facsimile/actions/workflows/rust-tests.yml/badge.svg)](https://github.com/msuchane/near-facsimile/actions/workflows/rust-tests.yml)
 [![dependency status](https://deps.rs/repo/github/msuchane/near-facsimile/status.svg)](https://deps.rs/repo/github/msuchane/near-facsimile)
 
-**reasonable facsimile**, noun
+* **reasonable facsimile**, noun
 
-: a copy that is not exact but is fairly close
+    : a copy that is not exact but is fairly close
 
-> The house is a reasonable facsimile of his original home.
+    > The house is a reasonable facsimile of his original home.
 
-—sometimes used in a joking way
+    —sometimes used in a joking way
 
-> I can speak French, or at least a reasonable facsimile of French.
+    > I can speak French, or at least a reasonable facsimile of French.
 
-[Merriam-Webster](https://www.merriam-webster.com/dictionary/reasonable%20facsimile)
+    [Merriam-Webster](https://www.merriam-webster.com/dictionary/reasonable%20facsimile)
 
 ## Usage
 
