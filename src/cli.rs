@@ -39,7 +39,7 @@ pub struct Cli {
     pub ignore_ext: Vec<OsString>,
 
     /// Look for this file name in the search and comparison
-    #[clap(long, value_name = "NAME")]
+    #[clap(long, value_name = "NAME", conflicts_with = "ignore-ext")]
     pub require_file: Vec<OsString>,
 
     /// Look for this file extension in the search and comparison
