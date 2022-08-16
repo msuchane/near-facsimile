@@ -1,5 +1,4 @@
 use std::convert::From;
-use std::ffi::OsStr;
 use std::path::PathBuf;
 
 use color_eyre::{eyre::bail, Result};
@@ -66,76 +65,6 @@ pub fn init_log_and_errors(verbose: u8) -> Result<()> {
     )?;
 
     Ok(())
-}
-
-impl Module {
-    // TODO: Implement this on the file path instead of the loaded module.
-    // Save the work of loading the whole file from disk.
-    /// Determine whether to include this file in the comparison or skip it,
-    /// based on the configured requires and ignores.
-    fn wanted(&self, options: &Cli) -> bool {
-        if !options.require_file.is_empty() {
-            if !options.require_ext.is_empty() {
-                self.required_file_name(options) || self.required_extension(options)
-            } else {
-                self.required_file_name(options)
-            }
-        } else if !options.ignore_file.is_empty() {
-            if !options.require_ext.is_empty() {
-                self.required_extension(options) && !self.ignored_file_name(options)
-            } else if !options.ignore_ext.is_empty() {
-                !self.ignored_file_name(options) && !self.ignored_extension(options)
-            } else {
-                !self.ignored_file_name(options)
-            }
-        } else if !options.require_ext.is_empty() {
-            self.required_extension(options)
-        } else if !options.ignore_ext.is_empty() {
-            !self.ignored_extension(options)
-        } else {
-            true
-        }
-    }
-
-    fn required_file_name(&self, options: &Cli) -> bool {
-        let name = self.path.file_name().map(OsStr::to_os_string);
-
-        if let Some(name) = name {
-            options.require_file.contains(&name)
-        } else {
-            false
-        }
-    }
-
-    fn required_extension(&self, options: &Cli) -> bool {
-        let extension = self.path.extension().map(OsStr::to_os_string);
-
-        if let Some(extension) = extension {
-            options.require_ext.contains(&extension)
-        } else {
-            false
-        }
-    }
-
-    fn ignored_file_name(&self, options: &Cli) -> bool {
-        let name = self.path.file_name().map(OsStr::to_os_string);
-
-        if let Some(name) = name {
-            options.ignore_file.contains(&name)
-        } else {
-            false
-        }
-    }
-
-    fn ignored_extension(&self, options: &Cli) -> bool {
-        let extension = self.path.extension().map(OsStr::to_os_string);
-
-        if let Some(extension) = extension {
-            options.ignore_ext.contains(&extension)
-        } else {
-            false
-        }
-    }
 }
 
 impl From<f64> for Percentage {
