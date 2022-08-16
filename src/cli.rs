@@ -24,6 +24,10 @@ pub struct Cli {
     /// Path to the output CSV file
     #[clap(short, long, value_name = "FILE", default_value = "comparisons.csv")]
     pub csv: PathBuf,
+
+    /// Path to the output JSON file
+    #[clap(short, long, value_name = "FILE", default_value = "comparisons.json")]
+    pub json: PathBuf,
 }
 
 /// Parse the current command-line options.
