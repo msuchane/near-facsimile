@@ -13,7 +13,7 @@
 
     > I can speak French, or at least a reasonable facsimile of French.
 
-    [Merriam-Webster](https://www.merriam-webster.com/dictionary/reasonable%20facsimile)
+    [“reasonable facsimile,” _Merriam-Webster.com Dictionary_](https://www.merriam-webster.com/dictionary/reasonable%20facsimile)
 
 ## Usage
 
