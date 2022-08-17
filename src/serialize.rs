@@ -21,7 +21,7 @@ impl OutputComparison {
         Ok(Self {
             pct_similar: comparison.similarity_pct.rounded(),
             file1: stripped_path(comparison.path1, options)?,
-            file2: stripped_path(comparison.path1, options)?,
+            file2: stripped_path(comparison.path2, options)?,
         })
     }
 }
@@ -55,7 +55,8 @@ fn as_csv(comparisons: &[OutputComparison], options: &Cli) -> Result<()> {
     // Each comparison entry writes a row in the CSV table.
     for comparison in comparisons {
         wtr.write_record(&[
-            &comparison.pct_similar.to_string(),
+            // For prettier alignment, always include one decimal, even if it's .0
+            &format!("{:.1}", &comparison.pct_similar),
             &comparison.file1,
             &comparison.file2,
         ])?;
