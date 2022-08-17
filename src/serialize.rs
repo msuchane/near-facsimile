@@ -17,7 +17,7 @@ struct OutputComparison {
 
 impl OutputComparison {
     /// Convert from the internal `Comparison` format to the serializable `OutputComparison` format.
-    fn from_internal(comparison: Comparison, options: &Cli) -> Result<Self> {
+    fn from_internal(comparison: &Comparison, options: &Cli) -> Result<Self> {
         Ok(Self {
             pct_similar: comparison.similarity_pct.rounded(),
             file1: stripped_path(comparison.path1, options)?,
@@ -35,7 +35,7 @@ pub fn serialize(mut comparisons: Vec<Comparison>, options: &Cli) -> Result<()> 
 
     let output_comparisons: Vec<OutputComparison> = comparisons
         .into_iter()
-        .map(|comparison| OutputComparison::from_internal(comparison, options))
+        .map(|comparison| OutputComparison::from_internal(&comparison, options))
         .collect::<Result<Vec<_>>>()?;
 
     as_csv(&output_comparisons, options)?;
