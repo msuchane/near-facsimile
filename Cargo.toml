@@ -2,7 +2,7 @@
 name = "near-facsimile"
 version = "0.8.0"
 edition = "2021"
-rust-version = "1.58"
+rust-version = "1.57"
 authors = ["Marek Suchánek <msuchane@redhat.com>"]
 license = "Apache-2.0"
 description = "Find similar or identical text files in a directory"
