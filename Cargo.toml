@@ -27,6 +27,7 @@ clap = { version = "3.2", features = ["derive", "cargo"] }
 permutator = "0.4"
 trigram = "0.4"
 ignore = "0.4"
+regex = "1.6"
 
 [package.metadata.rpm]
 package = "near-facsimile"

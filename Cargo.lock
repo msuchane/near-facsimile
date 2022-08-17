@@ -392,6 +392,7 @@ dependencies = [
  "owo-colors",
  "permutator",
  "rayon",
+ "regex",
  "serde",
  "serde_json",
  "simplelog",

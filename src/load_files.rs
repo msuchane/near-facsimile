@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 use color_eyre::Result;
 use ignore::Walk;
+use regex::Regex;
 
 use crate::{Cli, File};
 
@@ -12,7 +13,22 @@ use crate::{Cli, File};
 pub fn files(options: &Cli) -> Result<Vec<File>> {
     let base_path = &options.path;
 
-    visit_dirs(base_path, options)
+    let files = visit_dirs(base_path, options)?;
+
+    // If the "skip-lines" option is not set, return files as they are.
+    if options.skip_lines.is_empty() {
+        Ok(files)
+    // If the "skip-lines" option is set, remove all lines that match the regular
+    // expressions from the file contents, before returning them.
+    } else {
+        Ok(files
+            .into_iter()
+            .map(|file| File {
+                content: strip_lines(&file.content, &options.skip_lines),
+                ..file
+            })
+            .collect())
+    }
 }
 
 /// Recursively load all files in this directory as a Vec.
@@ -121,5 +137,51 @@ fn ignored_extension(path: &Path, options: &Cli) -> bool {
         options.ignore_ext.contains(&extension)
     } else {
         false
+    }
+}
+
+/// Remove all lines that match any specified regular expression from the text.
+fn strip_lines(text: &str, regexes: &[Regex]) -> String {
+    let lines: Vec<&str> = text
+        .lines()
+        // The filter uses the "not any" condition, or `!regexes.iter().any(...)`.
+        // That is, if any regex matches the line, the filter for that line
+        // evaluates to `false`, and in effect removes the line from the text.
+        .filter(|line| !{
+            regexes.iter().any(|regex| {
+                // Add an `if` block here just so that it can produce a log message.
+                if regex.is_match(line) {
+                    log::debug!("Skipping line due to regex {:?}:\n{:?}", &regex, &line);
+                    true
+                } else {
+                    false
+                }
+            })
+        })
+        .collect();
+
+    lines.join("\n")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn stripped_lines() {
+        let regexes = &[Regex::new("^//").unwrap()];
+
+        let text = "Here's some documentation.\n\
+            \n\
+            // A comment line here.\n\
+            \n\
+            And further documentation.";
+
+        let stripped = "Here's some documentation.\n\
+            \n\
+            \n\
+            And further documentation.";
+
+        assert_eq!(stripped, strip_lines(text, regexes));
     }
 }

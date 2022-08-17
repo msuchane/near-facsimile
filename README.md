@@ -67,6 +67,16 @@ The tools only reports files that are similar over a certain threshold. By defau
 $ near-facsimile --threshold=<0.8>
 ```
 
+### Disregarding certain lines in files
+
+You can configure the file comparison such that it skips all lines that match your regular expressions. The comparison is the calculated from teh remaining lines, which match none of the regular expressions.
+
+For example, skip all lines that start with `//`:
+
+```
+$ near-facsimile --skip-lines '^//'
+```
+
 ### Switching to a faster, less accurate comparison
 
 By default, the tool uses the _Levenshtein_ metric, which is accurate but rather slow. You can instead compare files using the _Jaro_ metric, which finishes in around half the time, but produces less accurate statistics.

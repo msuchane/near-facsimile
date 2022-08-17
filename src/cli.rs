@@ -2,6 +2,7 @@ use std::ffi::OsString;
 use std::path::PathBuf;
 
 use clap::Parser;
+use regex::Regex;
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -45,6 +46,10 @@ pub struct Cli {
     /// Look for this file extension in the search and comparison
     #[clap(long, value_name = "EXTENSION")]
     pub require_ext: Vec<OsString>,
+
+    /// Skip all lines that match this regular expression when comparing files
+    #[clap(long, value_name = "REGEX")]
+    pub skip_lines: Vec<Regex>,
 }
 
 /// Parse the current command-line options.
