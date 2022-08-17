@@ -31,6 +31,16 @@
         # dnf install near-facsimile
         ```
 
+* On macOS, use the **Homebrew** package manager:
+
+    1. Install the **Homebrew** package manager as described at <https://brew.sh/>.
+
+    2. Install the package:
+
+        ```
+        $ brew install msuchane/repo/near-facsimile
+        ```
+
 ## Usage
 
 * Recursively examine a directory of text files:
