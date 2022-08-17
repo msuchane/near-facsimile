@@ -17,13 +17,11 @@ use permutator::Combination;
 pub mod cli;
 mod comparison;
 mod load_files;
-mod logging;
 mod serialize;
 
 use cli::Cli;
 use comparison::{comparisons, Comparison};
 use load_files::files;
-pub use logging::init_log_and_errors;
 use serialize::serialize;
 
 /// Represents a loaded text file, with its path and content.
@@ -53,6 +51,28 @@ pub fn run(options: &Cli) -> Result<()> {
 
     log::info!("Producing a CSV table…");
     serialize(comparisons, options)?;
+
+    Ok(())
+}
+
+/// Initialize the handlers for logging and error reporting.
+pub fn init_log_and_errors(verbose: u8) -> Result<()> {
+    color_eyre::install()?;
+
+    let log_level = match verbose {
+        0 => simplelog::LevelFilter::Warn,
+        1 => simplelog::LevelFilter::Info,
+        _ => simplelog::LevelFilter::Debug,
+    };
+
+    simplelog::TermLogger::init(
+        log_level,
+        simplelog::Config::default(),
+        // Mixed mode prints errors to stderr and info to stdout. Not sure about the other levels.
+        simplelog::TerminalMode::default(),
+        // Try to use color if possible.
+        simplelog::ColorChoice::Auto,
+    )?;
 
     Ok(())
 }
