@@ -41,6 +41,16 @@
         $ brew install msuchane/repo/near-facsimile
         ```
 
+* To install from source on any system, use the **Cargo** package manager:
+
+    1. Install **Cargo** as described at <https://rustup.rs/>.
+
+    2. Install the package:
+
+        ```
+        $ cargo install near-facsimile
+        ```
+
 ## Usage
 
 * Recursively examine a directory of text files:
