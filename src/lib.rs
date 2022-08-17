@@ -1,3 +1,13 @@
+// Enable additional clippy lints by default.
+#![warn(
+    clippy::pedantic,
+    clippy::unwrap_used,
+    clippy::clone_on_ref_ptr,
+    clippy::todo
+)]
+// Forbid unsafe code in this program.
+#![forbid(unsafe_code)]
+
 use std::convert::From;
 use std::path::PathBuf;
 
