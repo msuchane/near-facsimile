@@ -31,6 +31,7 @@ regex = "1.6"
 # Version 0.2.132 seems to cause issues with RPM packages built by Copr.
 # Temporary workaround:
 libc = "=0.2.131"
+indicatif = { version = "0.17", features = ["rayon"] }
 
 [package.metadata.rpm]
 package = "near-facsimile"

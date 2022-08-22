@@ -53,7 +53,6 @@ pub struct File {
 pub struct Percentage(f64);
 
 pub fn run(options: &Cli) -> Result<()> {
-    log::info!("Loading files…");
     let files = files(options)?;
 
     if files.len() < 2 {
@@ -64,10 +63,8 @@ pub fn run(options: &Cli) -> Result<()> {
     // occurs more than once.
     let combinations = files.combination(2).map(|v| (v[0], v[1]));
 
-    log::info!("Comparing files…");
     let comparisons = comparisons(combinations, options);
 
-    log::info!("Producing a CSV table…");
     serialize(comparisons, options)?;
 
     Ok(())

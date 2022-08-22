@@ -27,6 +27,7 @@ pub fn init_log_and_errors(verbose: u8) -> Result<()> {
         // which prevents us from using `?` on it. Report to upstream.
         .set_time_offset_to_local()
         .expect("Failed to determine the local time zone.")
+        .set_time_level(LevelFilter::Debug)
         .build();
 
     let log_level = match verbose {

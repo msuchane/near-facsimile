@@ -16,6 +16,7 @@ limitations under the License.
 
 use std::path::{Path, PathBuf};
 
+use indicatif::{ParallelProgressIterator, ProgressBar, ProgressStyle};
 use owo_colors::{OwoColorize, Stream};
 use rayon::prelude::*;
 
@@ -31,8 +32,6 @@ pub struct Comparison<'a> {
 /// Groups together the various data and options used in an iteration
 /// of comparing two files, for convenience.
 struct ComparedPair<'a> {
-    index: usize,
-    total: usize,
     file1: &'a File,
     file2: &'a File,
     trigram: f64,
@@ -63,16 +62,23 @@ pub fn comparisons<'a, T>(combinations: T, options: &Cli) -> Vec<Comparison<'a>>
 where
     T: Iterator<Item = (&'a File, &'a File)> + Send + ExactSizeIterator,
 {
+    log::info!("Comparing files…");
+
     // The total number of combinations, and also of needed comparisons.
     let total = combinations.len();
 
+    // Configure the progress bar.
+    let progress_style = ProgressStyle::with_template(
+        "Progress {percent:>3}%    Comparison# {human_pos:>8}/{human_len:8}    [{elapsed_precise}]",
+    )
+    .expect("Failed to format the progress bar.");
+    let progress_bar = ProgressBar::new(total as u64).with_style(progress_style);
+
     combinations
-        .enumerate()
         // Convert the current sequential iterator to a parallel one.
         .par_bridge()
-        .map(|(index, (file1, file2))| ComparedPair {
-            index,
-            total,
+        .progress_with(progress_bar)
+        .map(|(file1, file2)| ComparedPair {
             file1,
             file2,
             trigram: trigram_f64(&file1.content, &file2.content),
@@ -85,8 +91,6 @@ where
 /// Compare the two files. Print out the report and return a struct with the information.
 /// Returns None if the files were skipped or if they are more different than the threshold.
 fn compare_files<'a>(pair: &ComparedPair<'a>, options: &Cli) -> Option<Comparison<'a>> {
-    log::debug!("Comparison #{}/{}", pair.index, pair.total);
-
     // The user can pick the accuracy and speed of the comparison.
     let similarity = match options.fast {
         // Levenshtein is slow and accurate. Default.
@@ -100,35 +104,28 @@ fn compare_files<'a>(pair: &ComparedPair<'a>, options: &Cli) -> Option<Compariso
 
     if similarity > options.threshold {
         let percent = Percentage::from(similarity);
-
-        if similarity >= 1.0 {
-            let message = format!(
-                "[{}/{}] These two files are identical ({:.1}%):",
-                pair.index,
-                pair.total,
-                percent.rounded()
-            );
-            println!(
-                "{}",
-                message.if_supports_color(Stream::Stdout, OwoColorize::red)
-            );
-        } else {
-            let message = format!(
-                "[{}/{}] These two files are similar ({:.1}%):",
-                pair.index,
-                pair.total,
-                percent.rounded()
-            );
-            println!(
-                "{}",
-                message.if_supports_color(Stream::Stdout, OwoColorize::yellow)
-            );
-        };
-        println!(
+        // Prepare the listing of the file pair before printing.
+        let file_display = format!(
             "\t→ {}\n\t→ {}",
             pair.file1.path.display(),
             pair.file2.path.display(),
         );
+
+        if similarity >= 1.0 {
+            let message = format!("These two files are identical ({:.1}%):", percent.rounded());
+            log::info!(
+                "{}\n{}",
+                message.if_supports_color(Stream::Stdout, OwoColorize::red),
+                file_display,
+            );
+        } else {
+            let message = format!("These two files are similar ({:.1}%):", percent.rounded());
+            log::info!(
+                "{}\n{}",
+                message.if_supports_color(Stream::Stdout, OwoColorize::yellow),
+                file_display
+            );
+        };
         log::debug!(
             "Similarity above the threshold:\n\tDistance: {:.3}",
             similarity,
