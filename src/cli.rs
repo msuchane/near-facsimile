@@ -35,7 +35,7 @@ pub struct Cli {
     #[clap(short, long, action = clap::ArgAction::Count)]
     pub fast: u8,
 
-    /// Display progress and debugging information
+    /// Display status and debugging information
     #[clap(short, long, action = clap::ArgAction::Count)]
     pub verbose: u8,
 
@@ -66,6 +66,10 @@ pub struct Cli {
     /// Skip all lines that match this regular expression when comparing files
     #[clap(long, value_name = "REGEX")]
     pub skip_lines: Vec<Regex>,
+
+    /// Display detailed progress information
+    #[clap(short = 'P', long, action)]
+    pub progress: bool,
 }
 
 /// Parse the current command-line options.
