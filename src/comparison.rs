@@ -64,15 +64,22 @@ where
 {
     log::info!("Comparing files…");
 
-    // The total number of combinations, and also of needed comparisons.
-    let total = combinations.len();
+    // If the `progress` command-line option isn't active, hide the progress bar.
+    let progress_bar = if options.progress {
+        // The total number of combinations, and also of needed comparisons.
+        let total = combinations.len();
 
-    // Configure the progress bar.
-    let progress_style = ProgressStyle::with_template(
-        "Progress {percent:>3}%    Comparison# {human_pos:>8}/{human_len:8}    [{elapsed_precise}]",
-    )
-    .expect("Failed to format the progress bar.");
-    let progress_bar = ProgressBar::new(total as u64).with_style(progress_style);
+        // Configure the progress bar.
+        let progress_style = ProgressStyle::with_template(
+            "Progress {percent:>3}%    Comparison# {human_pos:>8}/{human_len:8}    [{elapsed_precise}]",
+        )
+        .expect("Failed to format the progress bar.");
+
+        ProgressBar::new(total as u64).with_style(progress_style)
+    // When hidden, the progress bar doesn't render, and only satisfies the API.
+    } else {
+        ProgressBar::hidden()
+    };
 
     combinations
         // Convert the current sequential iterator to a parallel one.
