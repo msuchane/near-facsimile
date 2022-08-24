@@ -1,4 +1,6 @@
-# near-facsimile: Find similar or identical text files in a directory
+# near-facsimile
+
+Find similar or identical text files in a directory.
 
 [![Rust tests](https://github.com/msuchane/near-facsimile/actions/workflows/rust-tests.yml/badge.svg)](https://github.com/msuchane/near-facsimile/actions/workflows/rust-tests.yml)
 [![dependency status](https://deps.rs/repo/github/msuchane/near-facsimile/status.svg)](https://deps.rs/repo/github/msuchane/near-facsimile)
