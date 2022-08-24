@@ -414,7 +414,7 @@ dependencies = [
 
 [[package]]
 name = "near-facsimile"
-version = "0.8.2"
+version = "1.0.0"
 dependencies = [
  "clap",
  "color-eyre",
