@@ -27,8 +27,8 @@ pub struct Cli {
     #[clap(short, long, value_parser, value_name = "DIR", default_value = ".")]
     pub path: PathBuf,
 
-    /// The similarity fraction above which to report files
-    #[clap(short, long, value_name = "DECIMAL", default_value = "0.8")]
+    /// The similarity percentage above which to report files
+    #[clap(short, long, value_name = "DECIMAL", default_value = "85.0")]
     pub threshold: f64,
 
     /// Use a faster but less precise comparison method
@@ -75,5 +75,15 @@ pub struct Cli {
 /// Parse the current command-line options.
 #[must_use]
 pub fn options() -> Cli {
-    Cli::parse()
+    let mut options = Cli::parse();
+
+    // Provide the similarity threshold as a decimal value between 0.0 and 1.0,
+    // rather than the human-readable percentage between 0.0 and 100.0 that the user
+    // specifies on the command line.
+    //
+    // This saves some work later, where we would otherwise divide the threshold
+    // for each file comparison.
+    options.threshold /= 100.0;
+
+    options
 }

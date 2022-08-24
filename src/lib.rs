@@ -53,8 +53,17 @@ pub struct File {
 pub struct Percentage(f64);
 
 pub fn run(options: &Cli) -> Result<()> {
+    // Check that the similarity threshold is a valid percentage between 0% and 100%.
+    // The value is stored as a decimal between 0 and 1, but it's exposed to the user
+    // as a value between 0 and 100.
+    if options.threshold < 0.0 || options.threshold > 1.0 {
+        bail!("The similarity threshold must be between 0.0 and 100.0.")
+    }
+
+    // Load all matching files from the directory.
     let files = files(options)?;
 
+    // The comparison needs at least two files.
     if files.len() < 2 {
         bail!("Too few files that match the settings to compare in this directory.");
     }

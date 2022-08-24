@@ -81,10 +81,10 @@ $ near-facsimile --csv <path-to-new-file>
 
 ### Setting the lowest reported similarity threshold
 
-The tools only reports files that are similar over a certain threshold. By default, the threshold is 0.8, or 80% similar.
+The tool only reports files that are similar over a certain threshold. By default, the threshold is 85.0, or 85% similar.
 
 ```
-$ near-facsimile --threshold=<0.8>
+$ near-facsimile --threshold=<85.0>
 ```
 
 ### Disregarding certain lines in files
