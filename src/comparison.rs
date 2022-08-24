@@ -68,14 +68,7 @@ where
     let progress_bar = if options.progress {
         // The total number of combinations, and also of needed comparisons.
         let total = combinations.len();
-
-        // Configure the progress bar.
-        let progress_style = ProgressStyle::with_template(
-            "Progress {percent:>3}%    Comparison# {human_pos:>8}/{human_len:8}    [{elapsed_precise}]",
-        )
-        .expect("Failed to format the progress bar.");
-
-        ProgressBar::new(total as u64).with_style(progress_style)
+        progress_bar(total)
     // When hidden, the progress bar doesn't render, and only satisfies the API.
     } else {
         ProgressBar::hidden()
@@ -154,4 +147,15 @@ fn compare_files<'a>(pair: &ComparedPair<'a>, options: &Cli) -> Option<Compariso
 /// so that we can easily compare it with the other metrics.
 fn trigram_f64(content1: &str, content2: &str) -> f64 {
     f64::from(trigram::similarity(content1, content2))
+}
+
+/// Build a progress bar to report the progress of comaprisons.
+fn progress_bar(total_length: usize) -> ProgressBar {
+    // Configure the progress bar.
+    let progress_style = ProgressStyle::with_template(
+        "Progress {percent:>3}%    Comparison# {human_pos:>8}/{human_len:8}    [{elapsed_precise}]",
+    )
+    .expect("Failed to format the progress bar.");
+
+    ProgressBar::new(total_length as u64).with_style(progress_style)
 }
