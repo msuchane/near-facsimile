@@ -88,9 +88,9 @@ fn as_csv(comparisons: &[OutputComparison], options: &Cli) -> Result<()> {
 
 /// Serialize and save the comparisons as a pretty-formatted JSON file.
 fn as_json(comparisons: &[OutputComparison], options: &Cli) -> Result<()> {
-    let json_text = serde_json::to_string_pretty(comparisons)?;
-
-    fs::write(&options.json, json_text)?;
+    // Write directly to the file so that we don't hold the whole JSON text in memory.
+    let out_file = fs::File::create(&options.json)?;
+    serde_json::to_writer_pretty(out_file, comparisons)?;
 
     Ok(())
 }
