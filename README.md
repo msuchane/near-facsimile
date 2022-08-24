@@ -63,7 +63,7 @@ Find similar or identical text files in a directory.
 
     The program continually prints out file information to the terminal.
 
-    Finally, it saves all statistics sorted by file similarity to the `comparisons.csv` and `comparisons.json` files in the current directory.
+    Finally, it can save all statistics sorted by file similarity as a CSV or JSON file.
 
 ## Options
 
@@ -75,10 +75,16 @@ The following options are available:
 $ near-facsimile --path <path-to-directory>
 ```
 
-### Saving the CSV table to a different file
+### Saving the the results as a CSV table or a JSON file
+
+Optionally, you can save the file similarities above the set threshold as CSV or JSON:
 
 ```
-$ near-facsimile --csv <path-to-new-file>
+$ near-facsimile --csv <path-to-file>
+```
+
+```
+$ near-facsimile --json <path-to-file>
 ```
 
 ### Setting the lowest reported similarity threshold
@@ -91,7 +97,7 @@ $ near-facsimile --threshold=<85.0>
 
 ### Disregarding certain lines in files
 
-You can configure the file comparison such that it skips all lines that match your regular expressions. The comparison is the calculated from teh remaining lines, which match none of the regular expressions.
+You can configure the file comparison such that it skips all lines that match your regular expressions. The comparison is the calculated from the remaining lines, which match none of the regular expressions.
 
 For example, skip all lines that start with `//`:
 
