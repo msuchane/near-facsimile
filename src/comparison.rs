@@ -106,7 +106,7 @@ fn compare_files<'a>(pair: &ComparedPair<'a>, options: &Cli) -> Option<Compariso
         let percent = Percentage::from(similarity);
         // Prepare the listing of the file pair before printing.
         let file_display = format!(
-            "\t→ {}\n\t→ {}",
+            "  ‣ {}\n  ‣ {}",
             pair.file1.path.display(),
             pair.file2.path.display(),
         );
