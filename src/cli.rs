@@ -39,13 +39,13 @@ pub struct Cli {
     #[clap(short, long, action = clap::ArgAction::Count)]
     pub verbose: u8,
 
-    /// Path to the output CSV file
-    #[clap(short, long, value_name = "FILE", default_value = "comparisons.csv")]
-    pub csv: PathBuf,
+    /// Save the results as a CSV file
+    #[clap(short, long, value_name = "FILE")]
+    pub csv: Option<PathBuf>,
 
-    /// Path to the output JSON file
-    #[clap(short, long, value_name = "FILE", default_value = "comparisons.json")]
-    pub json: PathBuf,
+    /// Save the results as a JSON file
+    #[clap(short, long, value_name = "FILE")]
+    pub json: Option<PathBuf>,
 
     /// Ignore this file name in the search and comparison
     #[clap(long, value_name = "NAME", conflicts_with = "require-file")]

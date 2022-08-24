@@ -56,16 +56,21 @@ pub fn serialize(mut comparisons: Vec<Comparison>, options: &Cli) -> Result<()> 
         .map(|comparison| OutputComparison::from_internal(&comparison, options))
         .collect::<Result<Vec<_>>>()?;
 
-    as_csv(&output_comparisons, options)?;
-    as_json(&output_comparisons, options)?;
+    // Serialize to CSV, JSON, or both, depending on the command-line options.
+    if let Some(path) = &options.csv {
+        as_csv(&output_comparisons, path)?;
+    }
+    if let Some(path) = &options.json {
+        as_json(&output_comparisons, path)?;
+    }
 
     Ok(())
 }
 
 /// Serialize and save the comparisons as a CSV file.
-fn as_csv(comparisons: &[OutputComparison], options: &Cli) -> Result<()> {
+fn as_csv(comparisons: &[OutputComparison], file: &Path) -> Result<()> {
     // Prepare to write to the CSV file.
-    let mut wtr = csv::Writer::from_path(&options.csv)?;
+    let mut wtr = csv::Writer::from_path(file)?;
 
     // The CSV header:
     wtr.write_record(&["% similar", "File 1", "File 2"])?;
@@ -87,9 +92,9 @@ fn as_csv(comparisons: &[OutputComparison], options: &Cli) -> Result<()> {
 }
 
 /// Serialize and save the comparisons as a pretty-formatted JSON file.
-fn as_json(comparisons: &[OutputComparison], options: &Cli) -> Result<()> {
+fn as_json(comparisons: &[OutputComparison], file: &Path) -> Result<()> {
     // Write directly to the file so that we don't hold the whole JSON text in memory.
-    let out_file = fs::File::create(&options.json)?;
+    let out_file = fs::File::create(file)?;
     serde_json::to_writer_pretty(out_file, comparisons)?;
 
     Ok(())

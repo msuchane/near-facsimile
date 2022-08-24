@@ -65,7 +65,10 @@ pub fn run(options: &Cli) -> Result<()> {
 
     let comparisons = comparisons(combinations, options);
 
-    serialize(comparisons, options)?;
+    // Only serialize if at least one serialization options is active.
+    if options.csv.is_some() || options.json.is_some() {
+        serialize(comparisons, options)?;
+    }
 
     Ok(())
 }
