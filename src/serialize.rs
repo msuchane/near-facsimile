@@ -49,7 +49,7 @@ pub fn serialize(mut comparisons: Vec<Comparison>, options: &Cli) -> Result<()> 
     // Sort from highest to lowest. You can't sort f64 values, so convert them to u32
     // with a precision of percentage with a single decimal place, then subtract from 1000.
     comparisons
-        .sort_by_key(|comparison| 1000 - (comparison.similarity_pct.0 * 10.0).round() as i32);
+        .sort_unstable_by_key(|comparison| 1000 - (comparison.similarity_pct.0 * 10.0).round() as i32);
 
     let output_comparisons: Vec<OutputComparison> = comparisons
         .into_iter()
