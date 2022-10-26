@@ -20,7 +20,8 @@ use indicatif::{ParallelProgressIterator, ProgressBar, ProgressStyle};
 use owo_colors::{OwoColorize, Stream};
 use rayon::prelude::*;
 
-use crate::{Cli, File, Percentage};
+use crate::percentage::Percentage;
+use crate::{Cli, File};
 
 #[derive(Debug)]
 pub struct Comparison<'a> {
