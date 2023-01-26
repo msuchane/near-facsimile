@@ -1,6 +1,6 @@
 Name: near-facsimile
 Summary: Find similar or identical text files in a directory
-Version: 1.0.2
+Version: 1.0.3
 Release: 1%{?dist}
 License: ASL 2.0
 URL: https://github.com/msuchane/near-facsimile
@@ -32,12 +32,17 @@ cargo build --release
 %install
 # Clean up previous artifacts.
 rm -rf %{buildroot}
-# Prepare the target directory.
-mkdir -p %{buildroot}%{_bindir}
+# Prepare the target directories.
+install -d %{buildroot}%{_bindir}
+install -d %{buildroot}%{_mandir}/man1
 # Install the binary into the chroot environment.
 install -m 0755 target/release/%{name} %{buildroot}%{_bindir}/%{name}
 # An alternative way to install the binary using cargo.
 # cargo install --path . --root %{buildroot}/usr
+# Compress the man page
+gzip %{name}.1
+# Install the man page into the chroot environment.
+install -m 0644 %{name}.1.gz %{buildroot}%{_mandir}/man1/%{name}.1.gz
 
 %clean
 rm -rf %{buildroot}
@@ -47,5 +52,6 @@ rm -rf %{buildroot}
 %doc README.md
 #%doc CHANGELOG.md
 %license LICENSE
+%{_mandir}/man1/%{name}.1.gz
 # Pick the binary from the virtual, chroot system.
 %{_bindir}/%{name}
