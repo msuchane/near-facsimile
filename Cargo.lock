@@ -472,7 +472,7 @@ dependencies = [
 
 [[package]]
 name = "near-facsimile"
-version = "1.0.4"
+version = "1.0.5"
 dependencies = [
  "clap",
  "clap_lex",
