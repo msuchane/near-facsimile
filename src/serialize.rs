@@ -74,11 +74,11 @@ fn as_csv(comparisons: &[OutputComparison], file: &Path) -> Result<()> {
     let mut wtr = csv::Writer::from_path(file)?;
 
     // The CSV header:
-    wtr.write_record(&["% similar", "File 1", "File 2"])?;
+    wtr.write_record(["% similar", "File 1", "File 2"])?;
 
     // Each comparison entry writes a row in the CSV table.
     for comparison in comparisons {
-        wtr.write_record(&[
+        wtr.write_record([
             // For prettier alignment, always include one decimal, even if it's .0
             &format!("{:.1}", &comparison.pct_similar),
             &comparison.file1,

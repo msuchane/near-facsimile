@@ -14,8 +14,8 @@ mod cli;
 use cli::Cli;
 
 fn main() -> std::io::Result<()> {
-    let out_dir = std::path::PathBuf::from(std::env::var_os("OUT_DIR")
-        .ok_or_else(|| std::io::ErrorKind::NotFound)?);
+    let out_dir =
+        std::path::PathBuf::from(std::env::var_os("OUT_DIR").ok_or(std::io::ErrorKind::NotFound)?);
 
     let cmd: clap::Command = Cli::command();
 

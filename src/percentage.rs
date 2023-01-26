@@ -60,6 +60,6 @@ mod tests {
         assert_eq!(100.0, Percentage::from(1.0).rounded());
 
         // This is the interesting case:
-        assert_eq!(99.9, Percentage::from(0.99999999).rounded());
+        assert_eq!(99.9, Percentage::from(0.999_999_99).rounded());
     }
 }
