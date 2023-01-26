@@ -21,54 +21,54 @@ use clap::Parser;
 use regex::Regex;
 
 #[derive(Parser)]
-#[clap(author, version, about, long_about = None)]
+#[command(author, version, about, long_about = None)]
 pub struct Cli {
     /// Path to the root documentation directory
-    #[clap(short, long, value_parser, value_name = "DIR", default_value = ".")]
+    #[arg(short, long, value_parser, value_name = "DIR", default_value = ".")]
     pub path: PathBuf,
 
     /// The similarity percentage above which to report files
-    #[clap(short, long, value_name = "DECIMAL", default_value = "85.0")]
+    #[arg(short, long, value_name = "DECIMAL", default_value = "85.0")]
     pub threshold: f64,
 
     /// Use a faster but less precise comparison method
-    #[clap(short, long, action = clap::ArgAction::Count)]
+    #[arg(short, long, action = clap::ArgAction::Count)]
     pub fast: u8,
 
     /// Display status and debugging information
-    #[clap(short, long, action = clap::ArgAction::Count)]
+    #[arg(short, long, action = clap::ArgAction::Count)]
     pub verbose: u8,
 
     /// Save the results as a CSV file
-    #[clap(short, long, value_name = "FILE")]
+    #[arg(short, long, value_name = "FILE")]
     pub csv: Option<PathBuf>,
 
     /// Save the results as a JSON file
-    #[clap(short, long, value_name = "FILE")]
+    #[arg(short, long, value_name = "FILE")]
     pub json: Option<PathBuf>,
 
     /// Ignore this file name in the search and comparison
-    #[clap(long, value_name = "NAME", conflicts_with = "require-file")]
+    #[arg(long, value_name = "NAME", conflicts_with = "require_file")]
     pub ignore_file: Vec<OsString>,
 
     /// Ignore this file extension in the search and comparison
-    #[clap(long, value_name = "EXTENSION", conflicts_with = "require-ext")]
+    #[arg(long, value_name = "EXTENSION", conflicts_with = "require_ext")]
     pub ignore_ext: Vec<OsString>,
 
     /// Look for this file name in the search and comparison
-    #[clap(long, value_name = "NAME", conflicts_with = "ignore-ext")]
+    #[arg(long, value_name = "NAME", conflicts_with = "ignore_ext")]
     pub require_file: Vec<OsString>,
 
     /// Look for this file extension in the search and comparison
-    #[clap(long, value_name = "EXTENSION")]
+    #[arg(long, value_name = "EXTENSION")]
     pub require_ext: Vec<OsString>,
 
     /// Skip all lines that match this regular expression when comparing files
-    #[clap(long, value_name = "REGEX")]
+    #[arg(long, value_name = "REGEX")]
     pub skip_lines: Vec<Regex>,
 
     /// Display detailed progress information
-    #[clap(short = 'P', long, action)]
+    #[arg(short = 'P', long, action)]
     pub progress: bool,
 }
 
