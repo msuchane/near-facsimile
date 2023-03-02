@@ -31,14 +31,14 @@ use permutator::Combination;
 
 pub mod cli;
 mod comparison;
-mod load_files;
+//mod load_files;
 mod logging;
 mod percentage;
 mod serialize;
 
 use cli::Cli;
 use comparison::{comparisons, Comparison};
-use load_files::files;
+//use load_files::files;
 pub use logging::init_log_and_errors;
 use serialize::serialize;
 
@@ -57,6 +57,7 @@ pub fn run(options: &Cli) -> Result<()> {
         bail!("The similarity threshold must be between 0.0 and 100.0.")
     }
 
+    /*
     // Load all matching files from the directory.
     let files = files(options)?;
 
@@ -75,6 +76,7 @@ pub fn run(options: &Cli) -> Result<()> {
     if options.csv.is_some() || options.json.is_some() {
         serialize(comparisons, options)?;
     }
+     */
 
     Ok(())
 }

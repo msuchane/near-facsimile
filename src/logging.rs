@@ -18,7 +18,7 @@ use color_eyre::Result;
 use simplelog::{ColorChoice, ConfigBuilder, LevelFilter, TermLogger, TerminalMode};
 
 /// Initialize the handlers for logging and error reporting.
-pub fn init_log_and_errors(verbose: u8) -> Result<()> {
+pub fn init_log_and_errors(verbose: usize) -> Result<()> {
     color_eyre::install()?;
 
     // Use the local time zone in log messages.
