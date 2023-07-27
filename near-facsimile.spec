@@ -1,6 +1,6 @@
 Name: near-facsimile
 Summary: Find similar or identical text files in a directory
-Version: 1.0.6
+Version: 1.0.7
 Release: 1%{?dist}
 License: ASL 2.0
 URL: https://github.com/msuchane/near-facsimile
