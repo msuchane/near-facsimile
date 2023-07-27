@@ -31,9 +31,9 @@ pub fn init_log_and_errors(verbose: u8) -> Result<()> {
         .build();
 
     let log_level = match verbose {
-        0 => LevelFilter::Warn,
-        1 => LevelFilter::Info,
-        _ => LevelFilter::Debug,
+        0 => LevelFilter::Info,
+        1 => LevelFilter::Debug,
+        _ => LevelFilter::Trace,
     };
 
     TermLogger::init(

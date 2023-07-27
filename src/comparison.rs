@@ -63,7 +63,7 @@ pub fn comparisons<'a, T>(combinations: T, options: &Cli) -> Vec<Comparison<'a>>
 where
     T: Iterator<Item = (&'a File, &'a File)> + Send + ExactSizeIterator,
 {
-    log::info!("Comparing files…");
+    log::debug!("Comparing files…");
 
     // If the `progress` command-line option isn't active, hide the progress bar.
     let progress_bar = if options.progress {

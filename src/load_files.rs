@@ -27,7 +27,7 @@ use crate::{Cli, File};
 
 /// Load files and filter out those that are ignored by the comparisons.
 pub fn files(options: &Cli) -> Result<Vec<File>> {
-    log::info!("Loading files…");
+    log::debug!("Loading files…");
 
     let base_path = &options.path;
 

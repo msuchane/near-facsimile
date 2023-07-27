@@ -44,7 +44,7 @@ impl OutputComparison {
 
 /// Serialize the resulting comparisons as a structured file.
 pub fn serialize(mut comparisons: Vec<Comparison>, options: &Cli) -> Result<()> {
-    log::info!("Saving the comparison results…");
+    log::debug!("Saving the comparison results…");
 
     // Sort from highest to lowest. You can't sort f64 values, so convert them to u32
     // with a precision of percentage with a single decimal place, then subtract from 1000.
