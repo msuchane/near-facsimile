@@ -58,7 +58,7 @@ Find similar or identical text files in a directory.
     1. Download the image:
 
         ```
-        $ docker pull quay.io/msuchane/newdoc
+        $ docker pull quay.io/msuchane/near-facsimile:latest
         ```
 
     2. Run the image:
