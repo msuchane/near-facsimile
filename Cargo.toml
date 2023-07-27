@@ -1,8 +1,8 @@
 [package]
 name = "near-facsimile"
-version = "1.0.5"
+version = "1.0.6"
 edition = "2021"
-#rust-version = "1.60"
+rust-version = "1.65"
 authors = ["Marek Suchánek <msuchane@redhat.com>"]
 license = "Apache-2.0"
 description = "Find similar or identical text files in a directory"
