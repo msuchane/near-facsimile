@@ -53,6 +53,23 @@ Find similar or identical text files in a directory.
         $ cargo install near-facsimile
         ```
 
+* To install `near-facsimile` as a container, use Docker or Podman.
+
+    1. Download the image:
+
+        ```
+        $ docker pull quay.io/msuchane/newdoc
+        ```
+
+    2. Run the image:
+
+        ```
+        $ docker run -it -v .:/mnt:Z msuchane/near-facsimile near-facsimile
+        ```
+
+    3. Optionally, save the command as an alias in your shell configuration.
+
+
 ## Usage
 
 * Recursively examine a directory of text files:
