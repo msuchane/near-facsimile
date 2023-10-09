@@ -11,8 +11,10 @@ Source0: https://static.crates.io/crates/%{name}/%{name}-%{version}.crate
 # This works fine with Fedora and RHEL, but breaks the SUSE build:
 # ExclusiveArch: %{rust_arches}
 
-BuildRequires: rust
-BuildRequires: cargo
+# Dependencies of the Rust compiler:
+BuildRequires: make
+BuildRequires: gcc
+BuildRequires: llvm
 
 %description
 %{summary}
@@ -26,6 +28,9 @@ BuildRequires: cargo
 %setup -q
 
 %build
+# Install the latest Rust compiler.
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --component cargo rust-std rustc
+
 # Build the binary.
 cargo build --release
 
