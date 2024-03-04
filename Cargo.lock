@@ -439,7 +439,7 @@ dependencies = [
 
 [[package]]
 name = "near-facsimile"
-version = "1.0.7"
+version = "1.0.8"
 dependencies = [
  "clap",
  "clap_mangen",
