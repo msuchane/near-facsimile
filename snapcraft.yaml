@@ -1,0 +1,30 @@
+name: near-facsimile
+version: '1.0.9'
+summary: Near Facsimile
+description: Find similar or identical text files in a directory
+base: core24
+confinement: strict
+grade: stable
+
+apps:
+  near-facsimile:
+    command: near-facsimile
+    #plugs:
+      #- x11
+      #- wayland
+
+parts:
+  near-facsimile:
+    plugin: dump
+    source: .
+    override-build: |
+      set -eux
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+      ~/.cargo/bin/cargo build --release
+      mv target/release/near-facsimile .
+      cargo clean
+      craftctl default
+    build-packages:
+      - curl
+    #stage-packages:
+      # - libgtk-4-1
